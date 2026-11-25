@@ -46,6 +46,8 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 |---|---|
 | `/style reload` | Reload `config.yml` (permission `arkastyle.admin`) |
 | `/style rank <player>` | Show an online player's rank |
+| `/style give <player or uuid> <rank> [days]` | Give a rank for some days (default 30). This is what Tebex runs. Needs LuckPerms |
+| `/style remove <player or uuid> <rank>` | Take a rank away completely. Needs LuckPerms |
 
 ## Install
 
@@ -93,15 +95,39 @@ versions: run `/lp user <name> parent addtemp` to see the one on your server. Wh
 is a free player again and their tag and colour simply stop showing. Their picks are kept, so they come back
 if the rank is renewed.
 
-### Selling ranks
+### Selling ranks (Tebex)
 
-The plugin does not sell anything. It only reads LuckPerms groups, so any way of running that command works:
+The plugin does not take payments. Your store runs a command from the console when someone pays, and the
+plugin does the rest: it gives the LuckPerms group for the number of days, tells the player, announces it to
+everyone, and pays the monthly claim block bonus straight away.
 
-* **Tebex:** make a package for each rank and set its command to
-  `lp user {username} parent addtemp pro 30d accumulate` (and `ultra`).
-  Test one purchase with a Bedrock account before you sell: the name Tebex hands over must match the name
-  LuckPerms knows the player by.
-* **Discord / by hand:** run the same command from the console.
+In Tebex, make one package per rank and add this as the command (run it as a console command):
+
+| Package | Command on purchase | Command on refund / chargeback |
+|---|---|---|
+| Pro | `style give {id} pro 30` | `style remove {id} pro` |
+| Ultra | `style give {id} ultra 30` | `style remove {id} ultra` |
+
+* `{id}` is the player's UUID, which is safer than a name. `{username}` also works. The plugin accepts a UUID
+  with or without dashes.
+* If someone renews while they still have time left, the 30 days are added to the time left.
+* If the days are left out, `purchase.default-days` is used (30).
+* In the Tebex package, turn on "only run when the player is online", or make sure the buyer has joined the
+  server once. A player who has never joined is refused with a message in the console.
+* If someone buys Ultra while they have Pro, they have both groups and Ultra wins. Remove Pro by hand if you
+  want it gone (`style remove <player> pro`).
+* Every give and remove is written to the server log with who ran it.
+* Test one purchase with a Java account and one Bedrock account before you sell.
+
+You can run the same commands by hand from the console or in game (permission `arkastyle.admin`) to give a rank
+on Discord or as a prize:
+
+```
+style give <player or uuid> pro 30
+```
+
+If you would rather not use these, `/lp user <name> parent addtemp pro 30d accumulate` does the same for the
+group alone, without the announcement and the instant bonus.
 
 ## Monthly claim block bonus
 

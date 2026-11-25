@@ -23,6 +23,7 @@ ranks:
     name: "<aqua>Pro</aqua>"
     badge: "<aqua>[Pro]</aqua> "        # shown in chat in front of the name
     name-format: "<aqua>{name}</aqua>"  # how the player's name looks in chat
+    icon: GOLD_INGOT                    # item shown for this rank in the /style menu
     monthly-claim-blocks: 2000          # bonus claim blocks, once per calendar month (0 = none)
     commands: [craft, trash, anvil]
   ultra:
@@ -30,6 +31,7 @@ ranks:
     name: "<gradient:#ff8a00:#e52e71>Ultra</gradient>"
     badge: "<gradient:#ff8a00:#e52e71>[Ultra]</gradient> "
     name-format: "<gradient:#ff8a00:#e52e71>{name}</gradient>"
+    icon: NETHER_STAR
     monthly-claim-blocks: 5000
     commands: [enchant, grindstone, stonecutter, loom, smithing, cartography, ec]
 
@@ -87,6 +89,17 @@ tags:
 # ------------------------------------------------------------------------------
 #  MONTHLY CLAIM BLOCK BONUS  (amounts are per rank above)
 # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+#  PURCHASES. Your store (Tebex) runs this command from the console when someone pays:
+#     style give {id} pro 30        gives the Pro rank for 30 days, adds to the time left on a renewal
+#     style remove {id} pro         takes it away again (refund, chargeback)
+#  Both change the LuckPerms group, announce it, and give the monthly claim block bonus straight away.
+#  The player must have joined the server once. Details in the README.
+# ------------------------------------------------------------------------------
+purchase:
+  default-days: 30                      # used when the command has no number of days
+  broadcast: true                       # tell everyone online when a rank is given
+
 bonus:
   enabled: true
   announce-delay-seconds: 5             # wait after joining before giving and announcing it
@@ -96,6 +109,7 @@ bonus:
 # ------------------------------------------------------------------------------
 menu:
   title: "<gradient:#ff8a00:#e52e71>Style</gradient>"
+  free-icon: IRON_INGOT                 # rank item for players with no paid rank
 
 messages:
   prefix: "<gradient:#ff8a00:#e52e71>Style</gradient> <dark_gray>»</dark_gray> "
@@ -120,3 +134,14 @@ messages:
   info-free: "<gray>Rank: <white>Free</white>"
   info-rank: "<gray>Rank: </gray>{rank}"
   info-player: "<gray>{player} is rank:</gray> {rank}"
+  give-usage: "<red>Usage: /style give [player or uuid] [rank] [days]"
+  remove-usage: "<red>Usage: /style remove [player or uuid] [rank]"
+  give-ok: "<green>Gave {player} the {rank}<green> rank until <white>{until}</white>."
+  remove-ok: "<green>Took the {rank}<green> rank from {player}."
+  rank-granted: "<green>Thank you for supporting the server! Your {rank}<green> rank is active until <white>{until}</white>."
+  purchase-broadcast: "<gold>{player}</gold> <gray>just got the</gray> {rank}<gray> rank. Thank you for supporting the server!"
+  unknown-rank: "<red>That rank does not exist. Ranks are listed under 'ranks' in the config."
+  unknown-player: "<red>{player} has not joined this server yet."
+  bad-days: "<red>Days must be a whole number from 1 to {max}."
+  no-luckperms: "<red>LuckPerms is not installed, so ranks cannot be given or taken."
+  grant-failed: "<red>LuckPerms could not make that change. See the console."

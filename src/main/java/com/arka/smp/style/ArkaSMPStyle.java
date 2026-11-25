@@ -27,6 +27,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
     private volatile Ranks ranks;
     private Profiles profiles;
     private MonthlyBonus bonus;
+    private RankGrants grants;   // null without LuckPerms
     private boolean started;
 
     @Override
@@ -67,7 +68,9 @@ public final class ArkaSMPStyle extends JavaPlugin {
         }
         if (pm.getPlugin("LuckPerms") == null) {
             getLogger().warning("LuckPerms was not found. Ranks are read from permission groups ('group.<name>'), "
-                    + "so another permission plugin must provide them.");
+                    + "so another permission plugin must provide them. /style give and /style remove need LuckPerms.");
+        } else {
+            grants = new RankGrants();
         }
         getLogger().info("ArkaSMPStyle enabled: " + ranks.all().size() + " ranks, " + ranks.colors().size()
                 + " chat colours, " + ranks.tags().size() + " tags.");
@@ -103,6 +106,11 @@ public final class ArkaSMPStyle extends JavaPlugin {
 
     MonthlyBonus bonus() {
         return bonus;
+    }
+
+    /** Null when LuckPerms is not installed. */
+    RankGrants grants() {
+        return grants;
     }
 
     /** The player's paid rank, or null for a free player. A LuckPerms group gives the node "group.&lt;name&gt;". */

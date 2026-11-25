@@ -55,6 +55,15 @@ public final class StyleCheck {
         check("a Floodgate UUID is Bedrock", ArkaSMPStyle.isBedrock(new UUID(0L, 123456789L)));
         check("a normal UUID is Java", !ArkaSMPStyle.isBedrock(UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5")));
 
+        UUID u = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+        check("uuid with dashes is read", u.equals(GrantArgs.uuid("069a79f4-44e9-4726-a5be-fca90e38aaf5")));
+        check("uuid without dashes is read", u.equals(GrantArgs.uuid("069a79f444e94726a5befca90e38aaf5")));
+        check("a player name is not a uuid", GrantArgs.uuid("Notch") == null && GrantArgs.uuid("") == null && GrantArgs.uuid(null) == null);
+        check("a 36 character non-uuid is rejected", GrantArgs.uuid("zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz") == null);
+        check("days 30 is fine", GrantArgs.days("30", 366) == 30);
+        check("days 0, -5, 367 and text are rejected", GrantArgs.days("0", 366) == -1 && GrantArgs.days("-5", 366) == -1
+                && GrantArgs.days("367", 366) == -1 && GrantArgs.days("thirty", 366) == -1);
+
         System.out.println(failed == 0 ? "ALL PASSED" : failed + " FAILED");
         if (failed > 0) System.exit(1);
     }

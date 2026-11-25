@@ -13,6 +13,10 @@ First release.
   `/smithing` `/cartography` `/ec` (Ultra). Blocked in combat by default.
 * Monthly claim block bonus once per calendar month (Pro 2,000, Ultra 5,000), given on join or with
   `/style bonus`. Uses the `ClaimBlockBonus` service from ArkaSMPCore 1.3.0.
-* Tap-only `/style` menu (works for Bedrock) with a button to the UltraCosmetics menu.
+* `/style give <player or uuid> <rank> [days]` and `/style remove <player or uuid> <rank>` for the store (Tebex) to
+  run from the console. They change the LuckPerms group through its API (renewals add to the time left), thank
+  the player, announce it (`purchase.broadcast`) and pay the monthly bonus at once.
+* Tap-only `/style` menu (works for Bedrock) with a button to the UltraCosmetics menu. The rank item is
+  configurable per rank (`icon`, default Pro gold ingot, Ultra nether star, free iron ingot).
 * PlaceholderAPI expansion `%style_...%`, including `%style_is_bedrock%` for separate Bedrock and Java TAB designs.
 * `config-version: auto` updates; the `ranks`, `chat-colors` and `tags` sections are never overwritten.

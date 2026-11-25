@@ -62,7 +62,10 @@ final class StyleMenus {
                 lore.add(text("Monthly bonus: " + String.format("%,d", rank.monthlyBlocks()) + " claim blocks", NamedTextColor.GOLD));
             }
         }
-        m.set(4, Items.of(Material.NETHER_STAR, Component.text("Your rank: ").append(rankName), lore), null);
+        String iconName = rank == null
+                ? plugin.getConfig().getString("menu.free-icon", "IRON_INGOT")
+                : plugin.getConfig().getString("ranks." + rank.id() + ".icon", "NETHER_STAR");
+        m.set(4, Items.of(material(iconName, Material.NETHER_STAR), Component.text("Your rank: ").append(rankName), lore), null);
         m.set(10, Items.of(Material.NAME_TAG, text("Tags", NamedTextColor.YELLOW),
                 List.of(text("Pick the tag shown in chat", NamedTextColor.GRAY))), this::tags);
         m.set(12, Items.of(Material.CYAN_DYE, text("Chat colour", NamedTextColor.AQUA),
