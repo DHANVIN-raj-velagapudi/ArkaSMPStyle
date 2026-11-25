@@ -46,6 +46,7 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 |---|---|
 | `/style reload` | Reload `config.yml` (permission `arkastyle.admin`) |
 | `/style rank <player>` | Show an online player's rank |
+| `/style setup` | Create the rank groups in LuckPerms and put their permissions on them (run once). Needs LuckPerms |
 | `/style give <player or uuid> <rank> [days]` | Give a rank for some days (default 30). This is what Tebex runs. Needs LuckPerms |
 | `/style remove <player or uuid> <rank>` | Take a rank away completely. Needs LuckPerms |
 
@@ -58,42 +59,43 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 
 ## LuckPerms setup
 
-A rank is a LuckPerms group. Create the groups once:
+A rank is a LuckPerms group. Run this once as an admin or from the console:
 
 ```
-/lp creategroup pro
-/lp creategroup ultra
-/lp group ultra parent add pro
+/style setup
 ```
 
-Then give each group its limits. Homes and player warps are read by ArkaSMPCore from these permissions:
+It creates the `pro` and `ultra` groups if they are missing, makes Ultra inherit Pro, and puts the permissions
+from `ranks.<rank>.permissions` in the config on each group:
 
-```
-/lp group pro   permission set arka.homes.limit.8 true
-/lp group pro   permission set arka.pwarps.limit.6 true
-/lp group pro   permission set arka.warp.free true
-/lp group ultra permission set arka.homes.limit.1000 true
-/lp group ultra permission set arka.pwarps.limit.13 true
-```
+| Group | Permissions it gets |
+|---|---|
+| pro | `arka.homes.limit.8`, `arka.pwarps.limit.6`, `arka.warp.free` |
+| ultra | `arka.homes.limit.1000`, `arka.pwarps.limit.13`, `arka.warp.free` |
+
+It only adds. It never removes or changes anything that is already on a group, so it is safe to run again.
+`/style give` refuses to run until the group exists and tells you to run `/style setup`.
+
+The numbers are totals, not extras: 8 homes is the base 3 plus 5, and 6 player warps is the base 1 plus 5.
+If your base limits in ArkaSMPCore's `config.yml` are different, change the numbers in `ranks.<rank>.permissions`
+(they are the same ArkaSMPCore permissions you could set by hand with `/lp group pro permission set ...`).
+A config from before this option existed is not rewritten on update, so add the `permissions:` lines yourself.
 
 The Style plugin itself only checks `group.pro` and `group.ultra`. A player who has both gets Ultra.
-Ultra includes everything in Pro.
-
-Adjust the three numbers above if your base limits differ: Pro is "base + 5" homes and "base + 5" player warps,
-Ultra is unlimited homes and "base + 12" player warps. Check Core's `config.yml` for your base values.
+UltraCosmetics permissions are not added by `/style setup`: add those by hand once you have chosen them.
 
 ### Monthly ranks
 
-Give a rank for 30 days with a temporary group, so it expires on its own:
+A rank is a temporary LuckPerms group, so it ends on its own. `/style give` sets that up for you (see below).
+By hand, the same thing is:
 
 ```
 /lp user <name> parent addtemp pro 30d accumulate
 ```
 
 `accumulate` adds to the time left when someone renews early. The exact syntax can differ between LuckPerms
-versions: run `/lp user <name> parent addtemp` to see the one on your server. When the group expires the player
-is a free player again and their tag and colour simply stop showing. Their picks are kept, so they come back
-if the rank is renewed.
+versions. When the group expires the player is a free player again and their tag and colour simply stop showing.
+Their picks are kept, so they come back if the rank is renewed.
 
 ### Selling ranks (Tebex)
 

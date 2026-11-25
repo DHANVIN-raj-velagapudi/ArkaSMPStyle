@@ -55,6 +55,14 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             msg.send(sender, "info-player", "player", target.getName(), "rank!", r == null ? "<white>Free</white>" : r.name());
             return true;
         }
+        if (sub.equals("setup")) {
+            if (!sender.hasPermission("arkastyle.admin")) {
+                msg.send(sender, "no-permission");
+                return true;
+            }
+            setupLuckPerms(sender);
+            return true;
+        }
         if (sub.equals("give") || sub.equals("remove")) {
             if (!sender.hasPermission("arkastyle.admin")) {
                 msg.send(sender, "no-permission");
@@ -101,6 +109,32 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         return p != null && (p.isOnline() || p.hasPlayedBefore()) ? p : null;
     }
 
+    /** /style setup: creates the LuckPerms group of every rank and puts its permissions on it (adds only, removes nothing). */
+    private void setupLuckPerms(CommandSender sender) {
+        Messages msg = plugin.messages();
+        RankGrants grants = plugin.grants();
+        if (grants == null) {
+            msg.send(sender, "no-luckperms");
+            return;
+        }
+        List<RankGrants.SetupRank> list = new ArrayList<>();
+        Ranks.Rank previous = null;
+        for (Ranks.Rank r : plugin.ranks().all()) {
+            list.add(new RankGrants.SetupRank(r.group(), previous == null ? null : previous.group(),
+                    plugin.getConfig().getStringList("ranks." + r.id() + ".permissions")));
+            previous = r;
+        }
+        grants.setup(list).whenComplete((report, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            if (err != null) {
+                plugin.getLogger().warning("LuckPerms setup failed: " + err);
+                msg.send(sender, "grant-failed");
+                return;
+            }
+            msg.send(sender, "setup-done");
+            for (String line : report) msg.send(sender, "setup-line", "line", line);
+        }));
+    }
+
     private void giveOrTake(CommandSender sender, boolean give, String[] args) {
         Messages msg = plugin.messages();
         if (args.length < 3 || args.length > (give ? 4 : 3)) {
@@ -115,6 +149,10 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         Ranks.Rank rank = plugin.ranks().byId(args[2]);
         if (rank == null) {
             msg.send(sender, "unknown-rank");
+            return;
+        }
+        if (give && !grants.groupExists(rank.group())) {
+            msg.send(sender, "group-missing", "group", rank.group());
             return;
         }
         int days = 0;
@@ -193,7 +231,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             out.addAll(List.of("tag", "color", "bonus", "info"));
-            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove"));
+            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove", "setup"));
         } else if (args.length >= 2 && sender.hasPermission("arkastyle.admin")
                 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("remove"))) {
             if (args.length == 2) Bukkit.getOnlinePlayers().forEach(o -> out.add(o.getName()));

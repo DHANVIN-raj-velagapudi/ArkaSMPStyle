@@ -24,6 +24,9 @@ ranks:
     badge: "<aqua>[Pro]</aqua> "        # shown in chat in front of the name
     name-format: "<aqua>{name}</aqua>"  # how the player's name looks in chat
     icon: GOLD_INGOT                    # item shown for this rank in the /style menu
+    # Put on the LuckPerms group by /style setup (run it once). 8 homes = 3 base + 5, 6 player warps = 1 base + 5.
+    # Change these numbers if your base limits in ArkaSMPCore are different. arka.warp.free skips the warp fee.
+    permissions: [arka.homes.limit.8, arka.pwarps.limit.6, arka.warp.free]
     monthly-claim-blocks: 2000          # bonus claim blocks, once per calendar month (0 = none)
     commands: [craft, trash, anvil]
   ultra:
@@ -32,6 +35,7 @@ ranks:
     badge: "<gradient:#ff8a00:#e52e71>[Ultra]</gradient> "
     name-format: "<gradient:#ff8a00:#e52e71>{name}</gradient>"
     icon: NETHER_STAR
+    permissions: [arka.homes.limit.1000, arka.pwarps.limit.13, arka.warp.free]   # 13 = 1 base + 12
     monthly-claim-blocks: 5000
     commands: [enchant, grindstone, stonecutter, loom, smithing, cartography, ec]
 
@@ -143,5 +147,8 @@ messages:
   unknown-rank: "<red>That rank does not exist. Ranks are listed under 'ranks' in the config."
   unknown-player: "<red>{player} has not joined this server yet."
   bad-days: "<red>Days must be a whole number from 1 to {max}."
+  group-missing: "<red>The LuckPerms group '{group}' does not exist yet. Run <yellow>/style setup</yellow> once to create the rank groups."
+  setup-done: "<green>LuckPerms rank groups are ready:"
+  setup-line: "<gray> - {line}"
   no-luckperms: "<red>LuckPerms is not installed, so ranks cannot be given or taken."
   grant-failed: "<red>LuckPerms could not make that change. See the console."

@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, LuckPerms, UltraCosmetics]
 commands:
   style:
     description: Your rank, tags, chat colour and monthly bonus
-    usage: /style [tag|color|bonus|info|reload|give|remove]
+    usage: /style [tag|color|bonus|info|reload|give|remove|setup]
     aliases: [rank, ranks, perks]
   craft:
     description: Open a crafting table anywhere (rank command)

@@ -16,6 +16,8 @@ First release.
 * `/style give <player or uuid> <rank> [days]` and `/style remove <player or uuid> <rank>` for the store (Tebex) to
   run from the console. They change the LuckPerms group through its API (renewals add to the time left), thank
   the player, announce it (`purchase.broadcast`) and pay the monthly bonus at once.
+* `/style setup` creates the rank groups in LuckPerms (Ultra inherits Pro) and adds the home, player warp and
+  no-fee permissions from `ranks.<rank>.permissions`. It only adds. `/style give` refuses when the group is missing.
 * Tap-only `/style` menu (works for Bedrock) with a button to the UltraCosmetics menu. The rank item is
   configurable per rank (`icon`, default Pro gold ingot, Ultra nether star, free iron ingot).
 * PlaceholderAPI expansion `%style_...%`, including `%style_is_bedrock%` for separate Bedrock and Java TAB designs.
