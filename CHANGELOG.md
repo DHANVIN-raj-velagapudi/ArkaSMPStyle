@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0
+
+* UltraCosmetics for **Ultra only**: `roles.ultra.allow` now has `ultracosmetics.openmenu` and the wildcards
+  `ultracosmetics.hats.*`, `ultracosmetics.emotes.*` and `ultracosmetics.suits.*`. Pro and free players get none, and
+  YouTuber, Sr.Mod and Admin get them by inheriting Ultra.
+* The wildcard rule: `/style setup` still refuses every wildcard except those three. Gadgets, pets and effects must
+  be listed one permission at a time.
+* If you already updated to 1.1.0 your `roles:` section is yours and is not rewritten. Add the four lines above to
+  `roles.ultra.allow`, or delete the `roles:` section and restart to get the new default (a backup is kept).
+
 ## 1.1.0
 
 * New `roles:` section in `config.yml`: every LuckPerms group of the server with its weight, parents, `allow`,

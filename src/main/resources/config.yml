@@ -67,7 +67,10 @@ roles:
   ultra:
     weight: 40
     parents: [pro]
-    allow: [arka.homes.limit.1000, arka.pwarps.limit.13, arka.warp.free]
+    # The UltraCosmetics lines are for Ultra only (Pro and free players get none). Only hats, emotes and suits are given
+    # as groups. Add gadgets, pets and effects one permission at a time: wildcards are not allowed for them.
+    allow: [arka.homes.limit.1000, arka.pwarps.limit.13, arka.warp.free,
+            ultracosmetics.openmenu, ultracosmetics.hats.*, ultracosmetics.emotes.*, ultracosmetics.suits.*]
   youtuber:
     weight: 45
     parents: [ultra]

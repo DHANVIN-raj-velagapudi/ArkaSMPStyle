@@ -62,10 +62,19 @@ final class RoleGuard {
         return node == null ? "" : node.trim().toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * The only wildcards that may be allowed: cosmetics that cannot affect other players or the game. Everything else
+     * (gadgets, pets, effects, and any other plugin) has to be listed one permission at a time.
+     */
+    static final List<String> SAFE_WILDCARDS = List.of("ultracosmetics.hats.*", "ultracosmetics.emotes.*",
+            "ultracosmetics.suits.*");
+
     /** Why a node may not be put on the "allow" list of any group, or null when it is fine. */
     static String forbiddenToAllow(String node) {
         String n = normalize(node);
-        if (n.equals("*") || n.endsWith(".*") || n.contains("*")) return "wildcards are never allowed";
+        if (n.contains("*") && !SAFE_WILDCARDS.contains(n)) {
+            return "wildcards are not allowed (only " + String.join(", ", SAFE_WILDCARDS) + ")";
+        }
         if (FORBIDDEN.contains(n)) return "is a console-only permission";
         return null;
     }

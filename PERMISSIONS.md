@@ -32,7 +32,7 @@ Paste the command blocks into the console in order.
 
 ## Part 1: who gets what
 
-### The easy way: let the plugin do it (ArkaSMPStyle 1.1.0)
+### The easy way: let the plugin do it (ArkaSMPStyle 1.1.0 and newer)
 
 Everything in Part 1 and the blocking in Part 2 is already written into the `roles:` section of the Style config. You do
 not have to type the LuckPerms commands below. Run these **from the server console**:
@@ -52,7 +52,8 @@ Why it is safe:
 * It only touches what the config lists, and only plain, permanent, global permissions. Anything else on a group is
   left alone. It never deletes a group. Running it twice changes nothing the second time.
 * If the config has a mistake it **refuses to run** and says exactly where: a loop between parents, a bad group name,
-  a node in both allow and deny, a wildcard, or a dangerous permission.
+  a node in both allow and deny, a wildcard (the only wildcards allowed are `ultracosmetics.hats.*`,
+  `ultracosmetics.emotes.*` and `ultracosmetics.suits.*`), or a dangerous permission.
 * The plugin will **never allow** the console-only list (`/op`, `/stop`, `/give`, `/execute`, LuckPerms editing and so
   on), whatever the config says. A typo cannot hand someone `/op`.
 * `deny` sets a permission to false on the group and `remove` takes an old, too wide permission off. That is how the
@@ -158,6 +159,17 @@ Limits (homes, player warps) take the highest number the player has.
 |---|---|---|
 | `arkastyle.admin` | Reload, look up a rank, give and remove paid ranks | admin only |
 | `arkastyle.setup` | `/style setup` and `/style setup apply`: create and change LuckPerms groups | **nobody** (the console only) |
+
+**UltraCosmetics** (set by `style setup apply`, Ultra only; YouTuber, Sr.Mod and Admin inherit it)
+
+| Node | What it does | Who |
+|---|---|---|
+| `ultracosmetics.openmenu` | Open the cosmetics menu (`/uc menu`, and the Cosmetics button in `/style`) | ultra |
+| `ultracosmetics.hats.*`, `ultracosmetics.emotes.*`, `ultracosmetics.suits.*` | All hats, emotes and suits | ultra |
+| gadgets, pets, effects, mounts, morphs | Not given. Add one permission at a time under `roles.ultra.allow` | nobody yet |
+
+These node names are the usual ones from third-party sources, not confirmed against your UltraCosmetics version.
+Check with `/lp verbose` while equipping a hat as an Ultra player.
 | `arkastyle.cmd.<name>` | Use a rank command without the rank | nobody (the Pro and Ultra groups already unlock them) |
 | `arkastyle.bypass.combat` | Use rank commands in combat | nobody |
 

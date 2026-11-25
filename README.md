@@ -21,7 +21,7 @@ Paper 1.21+, Java 21+. Bedrock (Geyser/Floodgate) players can use everything: th
 | Monthly claim blocks | none | 2,000 | 5,000 |
 | /craft /trash /anvil | no | yes | yes |
 | /enchant /grindstone /stonecutter /loom /smithing /cartography /ec | no | no | yes |
-| Cosmetics (UltraCosmetics) | free ones | selection | all safe ones |
+| Cosmetics (UltraCosmetics) | none | none | hats, emotes and suits (more can be added) |
 
 Numbers in the table are the defaults in `config.yml`. The home and warp limits and the fee waiver live in
 LuckPerms permissions (see below), the rest in the config.
@@ -52,7 +52,7 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 
 ## Install
 
-1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.1.0.jar` in `plugins/`.
+1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.2.0.jar` in `plugins/`.
 2. LuckPerms is needed for ranks. PlaceholderAPI is optional (for TAB and scoreboards). UltraCosmetics is optional.
 3. Start the server. `plugins/ArkaSMPStyle/config.yml` is created and kept up to date on updates
    (`config-version: auto`; your `ranks`, `chat-colors` and `tags` sections are never overwritten).
@@ -77,7 +77,8 @@ style setup apply    (does it, after saving the groups as they are now)
   run and says where.
 * **Dangerous permissions can never be allowed**, whatever the config says: `/op`, `/stop`, `/execute`, `/fill`,
   `/give`, LuckPerms editing and similar stay on the console. `@console-only` in a deny list blocks all of them.
-  Wildcards (`*`) cannot be allowed either.
+  Wildcards (`*`) cannot be allowed either, except `ultracosmetics.hats.*`, `ultracosmetics.emotes.*` and
+  `ultracosmetics.suits.*`.
 * It needs the permission `arkastyle.setup`, which nobody has, so only the console can run it.
 
 `/style give` refuses to run until the group exists and tells you to run `/style setup apply`.
@@ -87,7 +88,10 @@ If your base limits in ArkaSMPCore's `config.yml` are different, change the numb
 If you update from 1.0.0 your `roles:` section is added to the config automatically (a copy of the old file is kept).
 
 The Style plugin itself only checks `group.pro` and `group.ultra`. A player who has both gets Ultra.
-UltraCosmetics permissions are not part of `roles:`: add those once you have chosen them, with `allow:`.
+UltraCosmetics: `roles.ultra` gets `ultracosmetics.openmenu` and the hat, emote and suit wildcards, so only Ultra (and
+the groups that inherit it) can use cosmetics. Gadgets, pets and effects must be added one permission at a time under
+`allow:`, because other wildcards are refused. These node names are the usual ones but I could not confirm them against
+your UltraCosmetics version: check with `/lp verbose`.
 See `PERMISSIONS.md` for what every permission does and who gets it.
 
 ### Monthly ranks
@@ -197,10 +201,10 @@ Pets-Drop-Items: false
 (Key names have changed between UltraCosmetics versions. Compare with the `config.yml` it generated, not this
 page, and pick the closest keys.)
 
-Allowed for paid ranks: hats, emotes, suits, particle effects, projectile effects, death effects, pets (no item
-drops) and gadgets that cannot grief or move other players. Leave out anything that gives a gameplay edge.
-Permission nodes look like `ultracosmetics.<category>.<name>`. Look up the exact node of each cosmetic in
-UltraCosmetics' own `permissions` list before adding it to a group.
+Given to Ultra by default: the menu, hats, emotes and suits. You can add particle effects, projectile effects, death
+effects, pets (no item drops) and gadgets that cannot grief or move other players, one permission at a time. Leave out
+anything that gives a gameplay edge. Permission nodes look like `ultracosmetics.<category>.<name>`. Look up the exact
+node of each cosmetic in UltraCosmetics' own `permissions` list before adding it under `roles.ultra.allow`.
 
 ## Chat
 

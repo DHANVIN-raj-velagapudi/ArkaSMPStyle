@@ -48,7 +48,7 @@ public final class StyleCheck {
                     && indexOf(shipped, "srmod") < indexOf(shipped, "admin"));
             boolean clean = true;
             for (RolePlan.Group g : shipped.groups()) for (String n : g.allow()) if (RoleGuard.forbiddenToAllow(n) != null) clean = false;
-            check("shipped roles allow nothing console-only and no wildcard", clean);
+            check("shipped roles allow nothing console-only and no unsafe wildcard", clean);
             RolePlan.Group def = shipped.groups().stream().filter(g -> g.name().equals("default")).findFirst().orElseThrow();
             check("default denies the console-only commands", def.deny().contains("minecraft.command.op")
                     && def.deny().contains("luckperms.editor") && def.deny().contains("minecraft.command.give")
@@ -62,6 +62,21 @@ public final class StyleCheck {
         }
         check("op cannot be allowed", !plan("g:\n  allow: [minecraft.command.op]").errors().isEmpty());
         check("a wildcard cannot be allowed", !plan("g:\n  allow: [arka.*]").errors().isEmpty());
+        check("ultracosmetics.* and gadget wildcards cannot be allowed", !plan("g:\n  allow: [ultracosmetics.*]").errors().isEmpty()
+                && !plan("g:\n  allow: [ultracosmetics.gadgets.*]").errors().isEmpty()
+                && !plan("g:\n  allow: [ultracosmetics.pets.*]").errors().isEmpty());
+        check("the safe cosmetic wildcards can be allowed", plan("g:\n  allow: [ultracosmetics.hats.*, ultracosmetics.emotes.*, ultracosmetics.suits.*]").errors().isEmpty());
+        if (shipped != null) {
+            RolePlan.Group ultraG = shipped.groups().stream().filter(g -> g.name().equals("ultra")).findFirst().orElseThrow();
+            boolean noOtherUc = true;
+            for (RolePlan.Group g : shipped.groups()) {
+                if (g.name().equals("ultra")) continue;
+                for (String n : g.allow()) if (n.startsWith("ultracosmetics.")) noOtherUc = false;
+            }
+            check("ultra gets the menu and hats, emotes and suits", ultraG.allow().containsAll(List.of("ultracosmetics.openmenu",
+                    "ultracosmetics.hats.*", "ultracosmetics.emotes.*", "ultracosmetics.suits.*")));
+            check("only ultra is given UltraCosmetics permissions directly (others inherit)", noOtherUc);
+        }
         check("the star cannot be allowed", !plan("g:\n  allow: [\"*\"]").errors().isEmpty());
         check("LuckPerms permission editing cannot be allowed", !plan("g:\n  allow: [luckperms.user.permission.set]").errors().isEmpty());
         check("the economy umbrella cannot be allowed", !plan("g:\n  allow: [arkaeco.admin]").errors().isEmpty());
