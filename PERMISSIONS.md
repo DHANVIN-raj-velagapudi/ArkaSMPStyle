@@ -336,8 +336,8 @@ there. Until I split the permission, only give `arka.admin` to an Admin you trus
 /lp group default permission set bukkit.command.help false
 ```
 
-These stop `/plugins`, `/version` (and its aliases `/ver` and `/about`) and `/help` for everyone except Admin and the
-Developer, who are given the first two above. Staff groups that need them set them to `true` on their own group.
+These stop `/plugins`, `/seed`, `/version` (and its aliases `/ver` and `/about`) and `/help` for everyone except Admin. `/plugins`
+and `/seed` are Admin only (the Developer keeps `/version`). Staff groups that need them set them to `true` on their own group.
 
 In `spigot.yml`, set `commands: send-namespaced: false` so the `plugin:command` forms disappear from tab-complete. This
 only hides them; the permissions above are what block them.

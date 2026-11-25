@@ -60,7 +60,7 @@ roles:
   default:
     # ultracosmetics.* is blocked for everyone here. Ultra (and the groups that inherit it) is given back only the
     # menu, hats, emotes and suits, because an exact or more specific permission beats a wildcard in LuckPerms.
-    deny: ["@console-only", "@staff-only", bukkit.command.plugins, bukkit.command.version, bukkit.command.help,
+    deny: ["@console-only", "@staff-only", bukkit.command.plugins, bukkit.command.version, bukkit.command.help, minecraft.command.seed,
            minecraft.command.me, minecraft.command.teammsg, ultracosmetics.*]
   pro:
     weight: 30
@@ -92,7 +92,7 @@ roles:
   developer:
     weight: 65
     allow: [arka.afk.bypass, arka.leaderboard.hide, arkaeco.baltop.hide, arka.stats, arka.lag,
-            minecraft.command.teleport, bukkit.command.plugins, bukkit.command.version]
+            minecraft.command.teleport, bukkit.command.version]
   srmod:
     weight: 70
     parents: [mod, ultra]

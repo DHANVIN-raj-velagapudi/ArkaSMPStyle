@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.1
+
+### Changed
+- **`/plugins` and `/seed` are Admin only.** `minecraft.command.seed` is now denied for everyone by the default group, and
+  the Developer rank no longer gets `/plugins` (it keeps `/version`). Only Admin is given both. New servers get this from
+  the default config; on a server that already has a `roles` section, copy the two changes in (see the README of this
+  release) and run `/style setup apply`.
+
 ## 1.4.0
 
 ### Changed
