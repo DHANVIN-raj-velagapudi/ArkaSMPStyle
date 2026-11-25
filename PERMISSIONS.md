@@ -54,7 +54,7 @@ Why it is safe:
 * If the config has a mistake it **refuses to run** and says exactly where: a loop between parents, a bad group name,
   a node in both allow and deny, a wildcard (the only wildcards allowed are `ultracosmetics.hats.*`,
   `ultracosmetics.emotes.*` and `ultracosmetics.suits.*`), or a dangerous permission.
-* The plugin will **never allow** the console-only list (`/op`, `/stop`, `/give`, `/execute`, LuckPerms editing and so
+* The plugin will **never allow** the console-only list (`/op`, `/stop`, `/execute`, `/fill`, LuckPerms editing and so
   on), whatever the config says. A typo cannot hand someone `/op`.
 * `deny` sets a permission to false on the group and `remove` takes an old, too wide permission off. That is how the
   clean-up of `minecraft.command.*`, `luckperms.*` and `arkaeco.admin.*` on Admin is done for you.
@@ -289,13 +289,36 @@ ranks, and move staff between groups. Mistakes with these are small, or can be r
 | `/op`, `/deop` | Gives or removes all power. There are no ops |
 | `/stop`, `/restart`, `/reload`, `/save-off` | Ends the server, breaks plugins, or stops saving so a crash loses progress |
 | `/execute`, `/function`, `/data`, `/datapack`, `/forceload` | Run anything as anyone, or edit world data directly |
-| `/fill`, `/clone`, `/setblock`, `/summon`, `/kill` | Destroy or flood large parts of the world, or wipe all mobs and pets |
-| `/give`, `/loot`, `/item`, `/attribute`, `/effect`, `/xp` | Create items and power out of nothing. The main way staff accounts get abused |
-| `/gamerule`, `/difficulty`, `/defaultgamemode`, `/worldborder`, `/setworldspawn` | Change how the whole world works |
+| `/fill`, `/clone`, `/setblock` | Destroy or flood large parts of the world in one command |
 | `/minecraft:*` and `/bukkit:*` | The same commands under their long names. Blocking the permission blocks both |
 | LuckPerms: set or unset a permission, create or delete a group, bulk update, import, export, web editor | An account with these can give itself everything. This is the one that makes a stolen staff account a disaster |
 | `/arkaeco import essentials` | Overwrites real balances |
+| Essentials `/sudo`, `/eco`, `/backup`, `/nuke` | Run commands as someone else (even the console), change balances, backups, kill everything |
 | WorldEdit outside the build world, if you use it | A wrong selection can erase a build in seconds |
+
+
+### What an Admin can do (everything except the list above)
+
+The Admin role is a trusted all-round staff role. Besides everything Sr.Mod and below can do, Admin has these, all
+listed one by one in `roles.admin` (wildcards are never used):
+
+* **Staff-only vanilla commands** that nobody else gets (the default group denies them with `@staff-only`): `/give`,
+  `/kill`, `/summon`, `/effect`, `/xp`, `/gamerule`, `/difficulty`, `/worldborder`, `/setworldspawn`, `/item`, `/loot`,
+  `/attribute`.
+* **Other vanilla commands**: `/gamemode`, `/time`, `/weather`, `/whitelist`, `/ban-ip`, `/pardon-ip`, `/enchant`,
+  `/clear`, `/spawnpoint`, `/playsound`, `/title`, `/advancement`, `/recipe`, `/seed`, `/damage`, `/save-all`, and the
+  server information commands (`/plugins`, `/version`, `/timings`, `/tps`).
+* **Essentials**: gamemode (all four modes) and `/vanish`; teleporting (`/tp`, `/tphere`, `/tpall`, `/tppos`, `/back`,
+  `/top`, `/jump`); players (`/fly`, `/god`, `/heal`, `/feed`, `/speed`, `/invsee`, `/enderchest`, `/clearinventory`,
+  `/repair`, `/nick`, `/seen`, `/whois`, `/socialspy`); moderation (`/mute`, `/kick`, `/ban`, `/tempban`, `/unban`,
+  `/banip`, `/unbanip`, `/jail`); items and world (`/give`, `/item`, `/more`, `/time`, `/weather`, `/thunder`,
+  `/broadcast`).
+* **Economy and shop admin**, `/style give` and `/style remove` for Pro and Ultra, `/style staff` for the other ranks,
+  `/mcbackup`, and the Core admin commands.
+
+What Admin **cannot** do: `/op`, `/stop`, `/reload`, `/execute`, `/function`, `/data`, `/fill`, `/clone`, `/setblock`,
+Essentials `/sudo`, `/eco`, `/backup`, `/nuke`, any LuckPerms editing, and give another player the `admin` rank (only
+`/style staff`, which refuses it, and the server console can change ranks).
 
 Vanilla `/enchant` is not the same as our `/enchant`. When a player types `/enchant`, our Ultra rank command answers.
 The vanilla one is still reachable as `/minecraft:enchant`, but only with a permission that nobody is given.

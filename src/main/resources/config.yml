@@ -49,8 +49,10 @@ ranks:
 #    allow:    permissions it gets (set to true)
 #    deny:     permissions set to false, so they stay blocked even if some other group gives them
 #    remove:   permissions taken off the group completely (use it to clean up an old, too wide grant)
-#  "@console-only" in a deny list stands for the dangerous commands: /op /stop /execute /fill /give, LuckPerms
+#  "@console-only" in a deny list stands for the dangerous commands: /op /stop /execute /fill, LuckPerms
 #  editing and so on. They are never allowed on any group. Wildcards (*) cannot be allowed at all. Only global,
+#  "@staff-only" stands for commands a trusted Admin may have but nobody else: /give /kill /summon /effect /xp
+#  /gamerule /difficulty /worldborder and similar. The default group denies them; only Admin is given them.
 #  permanent nodes are managed: temporary ones and ones with a context (world=...) are left alone.
 #  Homes 8 = the base 3 plus 5, and player warps 6 = the base 1 plus 5: change the numbers if your base is different.
 # ------------------------------------------------------------------------------
@@ -58,7 +60,7 @@ roles:
   default:
     # ultracosmetics.* is blocked for everyone here. Ultra (and the groups that inherit it) is given back only the
     # menu, hats, emotes and suits, because an exact or more specific permission beats a wildcard in LuckPerms.
-    deny: ["@console-only", bukkit.command.plugins, bukkit.command.version, bukkit.command.help,
+    deny: ["@console-only", "@staff-only", bukkit.command.plugins, bukkit.command.version, bukkit.command.help,
            minecraft.command.me, minecraft.command.teammsg, ultracosmetics.*]
   pro:
     weight: 30
@@ -99,15 +101,41 @@ roles:
   admin:
     weight: 100
     parents: [srmod]
+    # A trusted Admin can do everything except the dangerous few (the "@console-only" list below): no /op, no /stop,
+    # no /execute or /fill, no editing of LuckPerms permissions, and no giving the admin rank (LuckPerms parent
+    # commands are taken away, /style staff gives the other ranks). Wildcards are not allowed, so every command is listed.
     allow: [arka.admin, arka.warp.admin, arkaeco.admin.give, arkaeco.admin.take, arkaeco.admin.set,
-            arkaeco.admin.reset, arkaeco.admin.reload, arkaeco.shop.admin, arkastyle.admin, mcbackup.admin,
-            arkastyle.staff,
+            arkaeco.admin.reset, arkaeco.admin.reload, arkaeco.shop.admin, arkastyle.admin, arkastyle.staff, mcbackup.admin,
             luckperms.user.info, luckperms.user.parent.info, luckperms.group.info,
+            bukkit.command.plugins, bukkit.command.version, bukkit.command.timings, bukkit.command.tps,
+            # vanilla commands
+            minecraft.command.gamemode, minecraft.command.time, minecraft.command.weather, minecraft.command.whitelist,
+            minecraft.command.ban-ip, minecraft.command.pardon-ip, minecraft.command.give, minecraft.command.kill,
+            minecraft.command.summon, minecraft.command.effect, minecraft.command.xp, minecraft.command.experience,
+            minecraft.command.gamerule, minecraft.command.difficulty, minecraft.command.worldborder,
+            minecraft.command.setworldspawn, minecraft.command.item, minecraft.command.loot, minecraft.command.attribute,
+            minecraft.command.enchant, minecraft.command.clear, minecraft.command.spawnpoint, minecraft.command.playsound,
+            minecraft.command.title, minecraft.command.advancement, minecraft.command.recipe, minecraft.command.seed,
+            minecraft.command.damage, minecraft.command.save-all,
+            # Essentials: gamemode and vanish
             essentials.gamemode, essentials.gamemode.survival, essentials.gamemode.creative,
             essentials.gamemode.adventure, essentials.gamemode.spectator, essentials.vanish,
-            bukkit.command.plugins, bukkit.command.version,
-            minecraft.command.ban-ip, minecraft.command.pardon-ip, minecraft.command.gamemode, minecraft.command.time,
-            minecraft.command.weather, minecraft.command.whitelist]
+            # Essentials: teleporting
+            essentials.tp, essentials.tp.others, essentials.tphere, essentials.tpall, essentials.tppos, essentials.tpo,
+            essentials.tpohere, essentials.tptoggle, essentials.back, essentials.back.ondeath, essentials.top, essentials.jump,
+            # Essentials: players
+            essentials.fly, essentials.fly.others, essentials.god, essentials.god.others, essentials.heal,
+            essentials.heal.others, essentials.feed, essentials.feed.others, essentials.speed, essentials.invsee,
+            essentials.invsee.modify, essentials.enderchest, essentials.enderchest.modify, essentials.clearinventory,
+            essentials.clearinventory.others, essentials.repair, essentials.repair.all, essentials.nick,
+            essentials.nick.others, essentials.seen, essentials.seen.banreason, essentials.whois, essentials.socialspy,
+            # Essentials: moderation
+            essentials.mute, essentials.mute.notify, essentials.kick, essentials.kick.notify, essentials.ban,
+            essentials.ban.notify, essentials.tempban, essentials.unban, essentials.banip, essentials.unbanip,
+            essentials.jail, essentials.unjail, essentials.togglejail,
+            # Essentials: items, world and announcements
+            essentials.give, essentials.item, essentials.more, essentials.itemname, essentials.itemlore, essentials.kill,
+            essentials.time, essentials.time.set, essentials.weather, essentials.thunder, essentials.broadcast]
     deny: ["@console-only"]
     # luckperms.user.parent.add/remove (and the temp versions) are taken away on purpose: with them an Admin could give
     # the admin rank to anyone. Admins give and take staff ranks with /style staff, which never handles admin.

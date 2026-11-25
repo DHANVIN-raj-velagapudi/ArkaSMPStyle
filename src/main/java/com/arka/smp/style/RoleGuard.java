@@ -6,8 +6,8 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Permissions that no group may ever be given by /style setup, whatever the config says. They are the ones that
- * can end the server, wipe the world, create items or money from nothing, or let an account give itself everything.
+ * Permissions that no group may ever be given by /style setup, whatever the config says (the console-only list). They are the ones that
+ * can end the server, rewrite the world, run commands as someone else, or let an account give itself everything.
  * They stay on the console. The same list is what {@code @console-only} in a deny list expands to.
  */
 final class RoleGuard {
@@ -23,11 +23,7 @@ final class RoleGuard {
             "minecraft.command.save-off", "minecraft.command.execute", "minecraft.command.function",
             "minecraft.command.data", "minecraft.command.datapack", "minecraft.command.forceload",
             "minecraft.command.fill", "minecraft.command.clone", "minecraft.command.setblock",
-            "minecraft.command.summon", "minecraft.command.kill", "minecraft.command.give", "minecraft.command.loot",
-            "minecraft.command.item", "minecraft.command.attribute", "minecraft.command.effect",
-            "minecraft.command.xp", "minecraft.command.experience", "minecraft.command.gamerule",
-            "minecraft.command.difficulty", "minecraft.command.defaultgamemode", "minecraft.command.worldborder",
-            "minecraft.command.setworldspawn", "minecraft.command.publish", "minecraft.command.debug",
+            "minecraft.command.publish", "minecraft.command.debug",
             // Bukkit / Paper
             "bukkit.command.op.give", "bukkit.command.op.take", "bukkit.command.reload", "bukkit.command.restart",
             "bukkit.command.stop",
@@ -41,7 +37,23 @@ final class RoleGuard {
             "luckperms.group.parent.add", "luckperms.group.parent.set", "luckperms.group.parent.remove",
             "luckperms.group.parent.clear", "luckperms.creategroup", "luckperms.deletegroup",
             "luckperms.renamegroup", "luckperms.clonegroup", "luckperms.bulkupdate", "luckperms.import",
-            "luckperms.export", "luckperms.editor", "luckperms.applyedits");
+            "luckperms.export", "luckperms.editor", "luckperms.applyedits",
+            // Essentials: run commands as another player (also as the console), change balances, backups, mass kill
+            "essentials.sudo", "essentials.eco", "essentials.backup", "essentials.nuke");
+
+    /** The token that stands for {@link #STAFF_ONLY} inside a deny list. */
+    static final String STAFF_ONLY_TOKEN = "@staff-only";
+
+    /**
+     * Powerful commands that are fine for a trusted Admin but must stay away from everyone else: they create items and
+     * experience, kill, summon, and change game rules or the world border. A group may be given them (only Admin is by
+     * default); the default group denies them with this token.
+     */
+    static final List<String> STAFF_ONLY = List.of(
+            "minecraft.command.give", "minecraft.command.summon", "minecraft.command.kill", "minecraft.command.loot",
+            "minecraft.command.item", "minecraft.command.attribute", "minecraft.command.effect", "minecraft.command.xp",
+            "minecraft.command.experience", "minecraft.command.gamerule", "minecraft.command.difficulty",
+            "minecraft.command.defaultgamemode", "minecraft.command.worldborder", "minecraft.command.setworldspawn");
 
     /**
      * Never allowed either, but not put in the deny list: "arkaeco.admin" is an umbrella that includes the Essentials
@@ -91,12 +103,14 @@ final class RoleGuard {
         return null;
     }
 
-    /** Expands {@code @console-only} and normalises: lower case, no duplicates, order kept. */
+    /** Expands {@code @console-only} and {@code @staff-only} and normalises: lower case, no duplicates, order kept. */
     static List<String> expand(List<String> raw) {
         List<String> out = new ArrayList<>();
         for (String s : raw) {
             if (s == null) continue;
-            if (s.trim().equalsIgnoreCase(CONSOLE_ONLY_TOKEN)) {
+            if (s.trim().equalsIgnoreCase(STAFF_ONLY_TOKEN)) {
+                for (String c : STAFF_ONLY) if (!out.contains(c)) out.add(c);
+            } else if (s.trim().equalsIgnoreCase(CONSOLE_ONLY_TOKEN)) {
                 for (String c : CONSOLE_ONLY) if (!out.contains(c)) out.add(c);
             } else {
                 String n = normalize(s);

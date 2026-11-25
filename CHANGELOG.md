@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.4.0
+
+### Changed
+- **Admin is now a full trusted staff role.** It can do everything except the dangerous few. New in `roles.admin`: `/give`,
+  `/kill`, `/summon`, `/effect`, `/xp`, `/gamerule`, `/difficulty`, `/worldborder`, `/setworldspawn`, `/item`, `/loot`,
+  `/attribute`, more vanilla commands (`/enchant`, `/clear`, `/title`, `/save-all`, `/tps`, `/timings` and others) and a long
+  list of Essentials commands: teleporting (`/tp`, `/tphere`, `/back`...), players (`/fly`, `/god`, `/heal`, `/feed`,
+  `/invsee`, `/enderchest`, `/repair`, `/nick`...), moderation (`/mute`, `/ban`, `/tempban`, `/jail`...) and items.
+  Every command is listed one by one: wildcards are still refused.
+- **Two guard lists instead of one.** `@console-only` is now only the really dangerous commands: `/op`, `/stop`, `/reload`,
+  `/execute`, `/function`, `/data`, `/datapack`, `/forceload`, `/fill`, `/clone`, `/setblock`, LuckPerms editing, the
+  Economy import, and Essentials `/sudo`, `/eco`, `/backup` and `/nuke`. No group can ever be given these. The new
+  `@staff-only` token stands for `/give`, `/kill`, `/summon`, `/effect`, `/xp`, `/gamerule`, `/difficulty`, `/worldborder`,
+  `/setworldspawn`, `/item`, `/loot`, `/attribute` and `/defaultgamemode`: the default group denies them and only Admin
+  is given them.
+- Admin still cannot give the admin rank or edit LuckPerms. `/style staff` handles every other rank.
+- Already installed? Your `roles:` section is yours and is not rewritten. To get the new roles, delete the whole `roles:`
+  section from `config.yml` and restart (a backup of the old file is kept), then run `/style reload`, `style setup` and
+  `style setup apply` from the console.
+
 ## 1.3.0
 
 ### Added

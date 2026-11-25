@@ -91,6 +91,36 @@ public final class StyleCheck {
         check("/style staff refuses unlisted, empty and null groups", !StaffRanks.mayChange("srmod", okGroups)
                 && !StaffRanks.mayChange("", okGroups) && !StaffRanks.mayChange(null, okGroups));
         check("the tab-completion list drops admin, default and blanks", StaffRanks.clean(okGroups).equals(List.of("helper", "mod", "builder")));
+        // admin: everything except the dangerous few
+        if (shipped != null) {
+            RolePlan.Group a2 = shipped.groups().stream().filter(g -> g.name().equals("admin")).findFirst().orElseThrow();
+            RolePlan.Group d2 = shipped.groups().stream().filter(g -> g.name().equals("default")).findFirst().orElseThrow();
+            check("admin has give, kill, summon, effect, xp, gamerule and teleport commands", a2.allow().containsAll(List.of(
+                    "minecraft.command.give", "minecraft.command.kill", "minecraft.command.summon", "minecraft.command.effect",
+                    "minecraft.command.xp", "minecraft.command.gamerule", "essentials.tp", "essentials.fly", "essentials.invsee",
+                    "essentials.mute", "essentials.tempban", "essentials.heal")));
+            boolean noDanger = true;
+            for (String n : RoleGuard.CONSOLE_ONLY) if (a2.allow().contains(n)) noDanger = false;
+            check("admin has none of the console-only permissions (op, stop, execute, fill, sudo, LuckPerms editing)", noDanger
+                    && !a2.allow().contains("essentials.sudo") && !a2.allow().contains("minecraft.command.op")
+                    && !a2.allow().contains("minecraft.command.execute"));
+            check("admin cannot give the admin rank with LuckPerms commands", !a2.allow().contains("luckperms.user.parent.add")
+                    && !a2.allow().contains("luckperms.user.parent.set") && !a2.allow().contains("luckperms.group.parent.add"));
+            check("the default group still denies give, kill, summon and the other staff-only commands",
+                    d2.deny().containsAll(RoleGuard.STAFF_ONLY));
+            check("staff-only commands can be given to a group, console-only ones cannot", RoleGuard.forbiddenToAllow("minecraft.command.give") == null
+                    && RoleGuard.forbiddenToAllow("minecraft.command.op") != null && RoleGuard.forbiddenToAllow("essentials.sudo") != null
+                    && RoleGuard.forbiddenToAllow("essentials.eco") != null);
+            boolean noOverlap = true;
+            for (String n : RoleGuard.STAFF_ONLY) if (RoleGuard.CONSOLE_ONLY.contains(n)) noOverlap = false;
+            check("the console-only and staff-only lists do not overlap", noOverlap);
+            boolean wild = true;
+            for (String n : a2.allow()) if (n.contains("*")) wild = false;
+            check("admin allow list has no wildcard", wild);
+        }
+        check("@staff-only expands to give and kill but not to op", RoleGuard.expand(List.of("@staff-only")).contains("minecraft.command.give")
+                && !RoleGuard.expand(List.of("@staff-only")).contains("minecraft.command.op")
+                && !RoleGuard.expand(List.of("@console-only")).contains("minecraft.command.give"));
         check("op cannot be allowed", !plan("g:\n  allow: [minecraft.command.op]").errors().isEmpty());
         check("a wildcard cannot be allowed", !plan("g:\n  allow: [arka.*]").errors().isEmpty());
         check("ultracosmetics.* and gadget wildcards cannot be allowed", !plan("g:\n  allow: [ultracosmetics.*]").errors().isEmpty()
