@@ -1,0 +1,86 @@
+name: ArkaSMPStyle
+version: ${project.version}
+main: com.arka.smp.style.ArkaSMPStyle
+api-version: '1.21'
+description: Paid cosmetic ranks, chat tags and colours, rank commands and a monthly claim block bonus. No pay-to-win.
+authors: [Arka]
+depend: [ArkaSMPCore]
+softdepend: [PlaceholderAPI, LuckPerms, UltraCosmetics]
+
+commands:
+  style:
+    description: Your rank, tags, chat colour and monthly bonus
+    usage: /style [tag|color|bonus|info|reload]
+    aliases: [rank, ranks, perks]
+  craft:
+    description: Open a crafting table anywhere (rank command)
+    usage: /craft
+    aliases: [workbench, wb]
+  trash:
+    description: Throw items away (rank command)
+    usage: /trash
+    aliases: [disposal, bin]
+  anvil:
+    description: Open an anvil anywhere (rank command)
+    usage: /anvil
+  enchant:
+    description: Open an enchanting table anywhere (rank command)
+    usage: /enchant
+    aliases: [enchanttable]
+  grindstone:
+    description: Open a grindstone anywhere (rank command)
+    usage: /grindstone
+  stonecutter:
+    description: Open a stonecutter anywhere (rank command)
+    usage: /stonecutter
+  loom:
+    description: Open a loom anywhere (rank command)
+    usage: /loom
+  smithing:
+    description: Open a smithing table anywhere (rank command)
+    usage: /smithing
+  cartography:
+    description: Open a cartography table anywhere (rank command)
+    usage: /cartography
+  ec:
+    description: Open your ender chest anywhere (rank command)
+    usage: /ec
+    aliases: [enderchest, echest]
+
+permissions:
+  arkastyle.admin:
+    description: Reload the config and look up a player's rank
+    default: op
+  arkastyle.bypass.combat:
+    description: Use rank commands even in combat
+    default: false
+  arkastyle.cmd.craft:
+    description: Use /craft without a rank
+    default: false
+  arkastyle.cmd.trash:
+    description: Use /trash without a rank
+    default: false
+  arkastyle.cmd.anvil:
+    description: Use /anvil without a rank
+    default: false
+  arkastyle.cmd.enchant:
+    description: Use /enchant without a rank
+    default: false
+  arkastyle.cmd.grindstone:
+    description: Use /grindstone without a rank
+    default: false
+  arkastyle.cmd.stonecutter:
+    description: Use /stonecutter without a rank
+    default: false
+  arkastyle.cmd.loom:
+    description: Use /loom without a rank
+    default: false
+  arkastyle.cmd.smithing:
+    description: Use /smithing without a rank
+    default: false
+  arkastyle.cmd.cartography:
+    description: Use /cartography without a rank
+    default: false
+  arkastyle.cmd.ec:
+    description: Use /ec without a rank
+    default: false

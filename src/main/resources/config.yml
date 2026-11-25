@@ -1,0 +1,122 @@
+# ==============================================================================
+#  ArkaSMPStyle  -  paid cosmetic ranks, chat tags and colours, rank commands
+#  Ranks are LuckPerms groups. A rank never gives items, money, flying or fighting help.
+#  Text uses MiniMessage:  <green>text</green>  <gradient:#ff8a00:#e52e71>text</gradient>  <bold>
+#  After editing run:  /style reload
+# ==============================================================================
+
+# MANAGED BY THE PLUGIN - DO NOT CHANGE THIS LINE. It stores the plugin version that last updated this file.
+# When you install a newer version, new options are added below automatically and your settings are kept
+# (a backup of the old file goes to the config-backups folder).
+config-version: "auto"
+
+# ------------------------------------------------------------------------------
+#  RANKS, lowest first. A player's rank is the highest one whose LuckPerms group they are in. Monthly ranks are
+#  temporary groups, so LuckPerms removes them when the time is up:
+#     /lp user <name> parent addtemp pro 30d accumulate
+#  A higher rank includes everything of the lower ones (commands, tags, colours).
+#  Homes, player warps and the warp fee are set in LuckPerms with ArkaSMPCore's permission nodes, see README.
+# ------------------------------------------------------------------------------
+ranks:
+  pro:
+    group: pro                          # LuckPerms group name
+    name: "<aqua>Pro</aqua>"
+    badge: "<aqua>[Pro]</aqua> "        # shown in chat in front of the name
+    name-format: "<aqua>{name}</aqua>"  # how the player's name looks in chat
+    monthly-claim-blocks: 2000          # bonus claim blocks, once per calendar month (0 = none)
+    commands: [craft, trash, anvil]
+  ultra:
+    group: ultra
+    name: "<gradient:#ff8a00:#e52e71>Ultra</gradient>"
+    badge: "<gradient:#ff8a00:#e52e71>[Ultra]</gradient> "
+    name-format: "<gradient:#ff8a00:#e52e71>{name}</gradient>"
+    monthly-claim-blocks: 5000
+    commands: [enchant, grindstone, stonecutter, loom, smithing, cartography, ec]
+
+rank-commands:
+  block-in-combat: true                 # /anvil, /ec ... are refused while the player is in PvP combat
+
+# ------------------------------------------------------------------------------
+#  CHAT
+# ------------------------------------------------------------------------------
+chat:
+  enabled: true                         # set false if another plugin formats your chat
+  # {badge} rank badge, {tag} the unique tag the player picked, {name} the player name, {message} what they typed
+  format: "{badge}{tag}{name}<dark_gray> » </dark_gray>{message}"
+  default-message-color: "<white>"      # message colour of players who did not pick one
+
+# Message colours players can pick in /style. "rank" is the lowest rank that may use it: free, pro or ultra.
+# "format" is a MiniMessage opening tag. "material" is the menu icon.
+chat-colors:
+  white:   {name: "White",   format: "<white>",   material: WHITE_DYE,      rank: free}
+  gold:    {name: "Gold",    format: "<gold>",    material: ORANGE_DYE,     rank: pro}
+  aqua:    {name: "Aqua",    format: "<aqua>",    material: LIGHT_BLUE_DYE, rank: pro}
+  green:   {name: "Green",   format: "<green>",   material: LIME_DYE,       rank: pro}
+  pink:    {name: "Pink",    format: "<light_purple>", material: PINK_DYE,  rank: pro}
+  red:     {name: "Red",     format: "<red>",     material: RED_DYE,        rank: ultra}
+  yellow:  {name: "Yellow",  format: "<yellow>",  material: YELLOW_DYE,     rank: ultra}
+  blue:    {name: "Blue",    format: "<blue>",    material: BLUE_DYE,       rank: ultra}
+  purple:  {name: "Purple",  format: "<dark_purple>", material: PURPLE_DYE, rank: ultra}
+  gray:    {name: "Gray",    format: "<gray>",    material: GRAY_DYE,       rank: ultra}
+  fire:    {name: "Fire",    format: "<gradient:#ff512f:#f09819>",       material: BLAZE_POWDER,    rank: ultra}
+  ocean:   {name: "Ocean",   format: "<gradient:#2193b0:#6dd5ed>",       material: PRISMARINE_SHARD, rank: ultra}
+  sunset:  {name: "Sunset",  format: "<gradient:#ff8a00:#e52e71>",       material: GOLDEN_CARROT,   rank: ultra}
+  mint:    {name: "Mint",    format: "<gradient:#11998e:#38ef7d>",       material: SLIME_BALL,      rank: ultra}
+  galaxy:  {name: "Galaxy",  format: "<gradient:#7f00ff:#e100ff>",       material: AMETHYST_SHARD,  rank: ultra}
+  rainbow: {name: "Rainbow", format: "<rainbow>",                        material: NETHER_STAR,     rank: ultra}
+
+# Unique tags shown before the name. Same "rank" rule as above. Players pick one in /style.
+tags:
+  star:      {name: "Star",      format: "<yellow>[✦]</yellow> ",            material: GLOWSTONE_DUST, rank: pro}
+  knight:    {name: "Knight",    format: "<gray>[Knight]</gray> ",           material: IRON_SWORD,     rank: pro}
+  miner:     {name: "Miner",     format: "<aqua>[Miner]</aqua> ",            material: DIAMOND_PICKAXE, rank: pro}
+  lucky:     {name: "Lucky",     format: "<green>[☘ Lucky]</green> ",        material: EMERALD,        rank: pro}
+  builder:   {name: "Builder",   format: "<gold>[Builder]</gold> ",          material: BRICKS,         rank: pro}
+  explorer:  {name: "Explorer",  format: "<dark_aqua>[Explorer]</dark_aqua> ", material: COMPASS,      rank: pro}
+  raja:      {name: "Raja",      format: "<gradient:#f7971e:#ffd200>[♛ Raja]</gradient> ",   material: GOLDEN_HELMET,  rank: ultra}
+  rani:      {name: "Rani",      format: "<gradient:#ee0979:#ff6a00>[♛ Rani]</gradient> ",   material: GOLDEN_APPLE,   rank: ultra}
+  yodha:     {name: "Yodha",     format: "<gradient:#cb2d3e:#ef473a>[Yodha]</gradient> ",     material: NETHERITE_SWORD, rank: ultra}
+  sage:      {name: "Sage",      format: "<gradient:#7f00ff:#e100ff>[Sage]</gradient> ",      material: ENCHANTED_BOOK, rank: ultra}
+  shadow:    {name: "Shadow",    format: "<gradient:#232526:#757f9a>[Shadow]</gradient> ",    material: ENDER_PEARL,    rank: ultra}
+  frost:     {name: "Frost",     format: "<gradient:#2193b0:#6dd5ed>[❄ Frost]</gradient> ",   material: BLUE_ICE,       rank: ultra}
+  blaze:     {name: "Blaze",     format: "<gradient:#ff512f:#f09819>[Blaze]</gradient> ",     material: BLAZE_ROD,      rank: ultra}
+  phoenix:   {name: "Phoenix",   format: "<gradient:#f12711:#f5af19>[Phoenix]</gradient> ",   material: FIRE_CHARGE,    rank: ultra}
+  storm:     {name: "Storm",     format: "<gradient:#4568dc:#b06ab3>[⚡ Storm]</gradient> ",   material: LIGHTNING_ROD,  rank: ultra}
+  legend:    {name: "Legend",    format: "<rainbow>[Legend]</rainbow> ",                       material: NETHER_STAR,    rank: ultra}
+
+# ------------------------------------------------------------------------------
+#  MONTHLY CLAIM BLOCK BONUS  (amounts are per rank above)
+# ------------------------------------------------------------------------------
+bonus:
+  enabled: true
+  announce-delay-seconds: 5             # wait after joining before giving and announcing it
+
+# ------------------------------------------------------------------------------
+#  MENUS AND MESSAGES (MiniMessage)
+# ------------------------------------------------------------------------------
+menu:
+  title: "<gradient:#ff8a00:#e52e71>Style</gradient>"
+
+messages:
+  prefix: "<gradient:#ff8a00:#e52e71>Style</gradient> <dark_gray>»</dark_gray> "
+  no-permission: "<red>You cannot do that."
+  players-only: "<red>Only players can use this."
+  needs-rank: "<red>/{command} needs the {rank}<red> rank. Type <yellow>/style</yellow> to see what each rank gives."
+  in-combat: "<red>You cannot use /{command} while in combat."
+  trash-title: "<dark_red>Trash <gray>(closing destroys items)"
+  trash-done: "<gray>Destroyed <white>{count}</white> item(s)."
+  tag-set: "<green>Tag set to</green> {tag}"
+  tag-cleared: "<green>Tag removed."
+  tag-locked: "<red>The {tag}<red> tag needs the {rank}<red> rank."
+  color-set: "<green>Chat colour set."
+  color-cleared: "<green>Chat colour reset."
+  color-locked: "<red>That colour needs the {rank}<red> rank."
+  unknown-choice: "<red>Unknown choice. Open <yellow>/style</yellow> to pick from the list."
+  bonus-given: "<green>Your monthly <gold>{rank}</gold> <green>bonus: <gold>{blocks}</gold> claim blocks added!"
+  bonus-already: "<gray>You already got this month's bonus."
+  bonus-none: "<gray>Your rank has no monthly bonus. Pro and Ultra get one every month."
+  expired-note: "<gray>Your rank ended. Tags and colours that need it are switched off until you renew."
+  reloaded: "<green>ArkaSMPStyle reloaded: {ranks} ranks, {colors} colours, {tags} tags."
+  info-free: "<gray>Rank: <white>Free</white>"
+  info-rank: "<gray>Rank: </gray>{rank}"
+  info-player: "<gray>{player} is rank:</gray> {rank}"
