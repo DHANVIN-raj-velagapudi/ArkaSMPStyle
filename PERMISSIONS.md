@@ -159,6 +159,9 @@ Limits (homes, player warps) take the highest number the player has.
 |---|---|---|
 | `arkastyle.admin` | Reload, look up a rank, give and remove paid ranks | admin only |
 | `arkastyle.setup` | `/style setup` and `/style setup apply`: create and change LuckPerms groups | **nobody** (the console only) |
+| `arkastyle.staff` | `/style staff give or remove <player> <group>`: give and take staff and creator groups (helper, mod, builder, developer, srmod, youtuber, media). Never admin or default, never an Admin's groups, never your own | admin only |
+| `essentials.gamemode`, `essentials.gamemode.survival, .creative, .adventure, .spectator` | `/gamemode` and `/gm` (Essentials replaces the vanilla command when it is installed) | admin |
+| `essentials.vanish` | `/vanish` (Essentials) | admin |
 
 **UltraCosmetics** (set by `style setup apply`, Ultra only; YouTuber, Sr.Mod and Admin inherit it)
 
@@ -222,10 +225,13 @@ Check with `/lp verbose` while equipping a hat as an Ultra player.
 /lp group admin permission set mcbackup.admin true
 /lp group admin permission set luckperms.user.info true
 /lp group admin permission set luckperms.user.parent.info true
-/lp group admin permission set luckperms.user.parent.add true
-/lp group admin permission set luckperms.user.parent.remove true
-/lp group admin permission set luckperms.user.parent.addtemp true
-/lp group admin permission set luckperms.user.parent.removetemp true
+/lp group admin permission set arkastyle.staff true
+/lp group admin permission set essentials.gamemode true
+/lp group admin permission set essentials.gamemode.survival true
+/lp group admin permission set essentials.gamemode.creative true
+/lp group admin permission set essentials.gamemode.adventure true
+/lp group admin permission set essentials.gamemode.spectator true
+/lp group admin permission set essentials.vanish true
 /lp group admin permission set luckperms.group.info true
 /lp group admin permission set bukkit.command.plugins true
 /lp group admin permission set bukkit.command.version true

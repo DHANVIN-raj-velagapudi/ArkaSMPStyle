@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.0
+
+### Added
+- **`/style staff give|remove <player> <group>`** (permission `arkastyle.staff`, given to Admin). An Admin can now give and
+  take the staff and creator groups listed in `staff-ranks.grantable` (helper, mod, builder, developer, srmod, youtuber,
+  media). The groups `admin` and `default` are always refused, an Admin's own groups cannot be changed, and nobody can
+  change their own. Only the console can make an Admin (`lp user NAME parent add admin`).
+- Admin can use `/gamemode` and `/vanish`: `essentials.gamemode`, the four `essentials.gamemode.<mode>` nodes and
+  `essentials.vanish` are in the admin role. Essentials replaces the vanilla `/gamemode` when it is installed, so the
+  vanilla permission alone was not enough.
+
+### Changed
+- Admin no longer has `luckperms.user.parent.add`, `.remove`, `.addtemp` and `.removetemp`. With them an Admin could give
+  the admin rank to anyone. They are in the admin role's `remove:` list, so `style setup apply` takes them away.
+- Already installed? Your `roles:` section is yours and is not rewritten. Edit `roles.admin` as in the new default
+  `config.yml`, run `/style reload`, then `style setup` and `style setup apply`. The new `staff-ranks:` section and the
+  new messages are added to your config automatically.
+
 ## 1.2.2
 
 * UltraCosmetics is blocked for the `default` group: `ultracosmetics.*` is in its `deny` list. Ultra still gets the menu,

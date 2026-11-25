@@ -49,6 +49,7 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 | `/style setup` and `/style setup apply` | Console only. Preview, then apply, the `roles:` section to LuckPerms. Needs LuckPerms |
 | `/style give <player or uuid> <rank> [days]` | Give a rank for some days (default 30). This is what Tebex runs. Needs LuckPerms |
 | `/style remove <player or uuid> <rank>` | Take a rank away completely. Needs LuckPerms |
+| `/style staff <give or remove> <player> <group>` | Admin only. Give or take a staff or creator group (list in `staff-ranks.grantable`). Never handles `admin` or `default`, never changes an Admin or yourself. Needs LuckPerms |
 
 ## Install
 

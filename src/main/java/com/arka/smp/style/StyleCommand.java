@@ -68,6 +68,14 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             setupLuckPerms(sender, apply);
             return true;
         }
+        if (sub.equals("staff")) {
+            if (!sender.hasPermission("arkastyle.staff") && !(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
+                msg.send(sender, "no-permission");
+                return true;
+            }
+            staff(sender, args);
+            return true;
+        }
         if (sub.equals("give") || sub.equals("remove")) {
             if (!sender.hasPermission("arkastyle.admin")) {
                 msg.send(sender, "no-permission");
@@ -199,6 +207,74 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    // ---- /style staff give|remove <player> <group> ----------------------------------------------
+
+    /**
+     * Gives or takes a staff or creator group (helper, mod, builder, developer, srmod, youtuber, media by default).
+     * The groups come from "staff-ranks.grantable" in the config; "admin" and "default" are refused whatever the config
+     * says, nobody can change the groups of an Admin with it, and nobody can change their own.
+     */
+    private void staff(CommandSender sender, String[] args) {
+        Messages msg = plugin.messages();
+        boolean give = args.length > 1 && args[1].equalsIgnoreCase("give");
+        boolean take = args.length > 1 && args[1].equalsIgnoreCase("remove");
+        if (args.length != 4 || (!give && !take)) {
+            msg.send(sender, "staff-usage", "groups", String.join(", ", staffGroups()));
+            return;
+        }
+        RankGrants grants = plugin.grants();
+        if (grants == null) {
+            msg.send(sender, "no-luckperms");
+            return;
+        }
+        String group = args[3].toLowerCase(Locale.ROOT);
+        if (StaffRanks.NEVER.contains(group)) {
+            msg.send(sender, "staff-never", "group", group);
+            return;
+        }
+        if (!StaffRanks.mayChange(group, plugin.getConfig().getStringList("staff-ranks.grantable"))) {
+            msg.send(sender, "staff-not-allowed", "group", group, "groups", String.join(", ", staffGroups()));
+            return;
+        }
+        if (!grants.groupExists(group)) {
+            msg.send(sender, "group-missing", "group", group);
+            return;
+        }
+        OfflinePlayer target = find(args[2]);
+        if (target == null) {
+            msg.send(sender, "unknown-player", "player", args[2]);
+            return;
+        }
+        UUID id = target.getUniqueId();
+        String name = target.getName() != null ? target.getName() : args[2];
+        boolean console = sender instanceof org.bukkit.command.ConsoleCommandSender;
+        if (!console && sender instanceof Player self && self.getUniqueId().equals(id)) {
+            msg.send(sender, "staff-self");
+            return;
+        }
+        grants.hasGroup(id, "admin").thenCompose(isAdmin -> {
+            if (isAdmin && !console) return java.util.concurrent.CompletableFuture.completedFuture((RankGrants.Result) null);
+            return give ? grants.grantForever(id, group) : grants.take(id, group);
+        }).whenComplete((res, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            if (err != null) {
+                plugin.getLogger().warning("Could not change the group of " + name + ": " + err);
+                msg.send(sender, "grant-failed");
+                return;
+            }
+            if (res == null) {
+                msg.send(sender, "staff-target-admin", "player", name);
+                return;
+            }
+            plugin.getLogger().info((give ? "Gave" : "Took") + " group " + group + (give ? " to " : " from ") + name
+                    + " (" + id + ") by " + sender.getName() + " with /style staff");
+            msg.send(sender, give ? "staff-given" : "staff-removed", "player", name, "group", group);
+        }));
+    }
+
+    private List<String> staffGroups() {
+        return StaffRanks.clean(plugin.getConfig().getStringList("staff-ranks.grantable"));
+    }
+
     private void giveOrTake(CommandSender sender, boolean give, String[] args) {
         Messages msg = plugin.messages();
         if (args.length < 3 || args.length > (give ? 4 : 3)) {
@@ -297,8 +373,13 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             out.addAll(List.of("tag", "color", "bonus", "info"));
             if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove"));
             if (canSetup(sender)) out.add("setup");
+            if (sender.hasPermission("arkastyle.staff")) out.add("staff");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("setup") && canSetup(sender)) {
             out.add("apply");
+        } else if (args.length >= 2 && args[0].equalsIgnoreCase("staff") && sender.hasPermission("arkastyle.staff")) {
+            if (args.length == 2) out.addAll(List.of("give", "remove"));
+            else if (args.length == 3) Bukkit.getOnlinePlayers().forEach(o -> out.add(o.getName()));
+            else if (args.length == 4) out.addAll(staffGroups());
         } else if (args.length >= 2 && sender.hasPermission("arkastyle.admin")
                 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("remove"))) {
             if (args.length == 2) Bukkit.getOnlinePlayers().forEach(o -> out.add(o.getName()));

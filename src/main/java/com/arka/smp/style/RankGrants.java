@@ -37,6 +37,18 @@ final class RankGrants {
         }).thenApply(v -> new Result(expiry.get()));
     }
 
+    /** Gives the group with no expiry (staff ranks). Giving it again changes nothing. */
+    CompletableFuture<Result> grantForever(UUID id, String group) {
+        InheritanceNode node = InheritanceNode.builder(group).build();
+        return lp().getUserManager().modifyUser(id, user -> user.data().add(node)).thenApply(v -> new Result(null));
+    }
+
+    /** True when the user is in the group right now (loads the user from LuckPerms, also when offline). */
+    CompletableFuture<Boolean> hasGroup(UUID id, String group) {
+        return lp().getUserManager().loadUser(id).thenApply(user -> user.getNodes(NodeType.INHERITANCE).stream()
+                .anyMatch(n -> n.getGroupName().equalsIgnoreCase(group) && !n.hasExpired()));
+    }
+
     /** Removes the group from the user completely (temporary and permanent). */
     CompletableFuture<Result> take(UUID id, String group) {
         return lp().getUserManager().modifyUser(id, user -> user.data().clear(

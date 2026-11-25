@@ -62,6 +62,35 @@ public final class StyleCheck {
                             && !admin.deny().contains("arkaeco.admin"));
             check("admin cleans up the old wide grants", admin.remove().containsAll(List.of("minecraft.command.*", "luckperms.*", "arkaeco.admin.*", "*")));
         }
+        // admin: gamemode and vanish (Essentials owns these commands), rank giving only through /style staff
+        if (shipped != null) {
+            RolePlan.Group adm = shipped.groups().stream().filter(g -> g.name().equals("admin")).findFirst().orElseThrow();
+            check("admin may use gamemode and vanish (vanilla and Essentials)", adm.allow().containsAll(List.of(
+                    "minecraft.command.gamemode", "essentials.gamemode", "essentials.gamemode.survival", "essentials.gamemode.creative",
+                    "essentials.gamemode.adventure", "essentials.gamemode.spectator", "essentials.vanish")));
+            check("admin gives ranks through /style staff, not with raw LuckPerms parent commands",
+                    adm.allow().contains("arkastyle.staff") && !adm.allow().contains("luckperms.user.parent.add")
+                            && adm.remove().containsAll(List.of("luckperms.user.parent.add", "luckperms.user.parent.remove",
+                            "luckperms.user.parent.addtemp", "luckperms.user.parent.removetemp")));
+            try {
+                var yy = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
+                        new java.io.File("src/main/resources/config.yml"));
+                List<String> grantable = yy.getStringList("staff-ranks.grantable");
+                check("shipped staff-ranks list has staff groups and never admin or default",
+                        grantable.containsAll(List.of("helper", "mod", "builder", "developer")) && !grantable.contains("admin")
+                                && !grantable.contains("default"));
+            } catch (RuntimeException e) {
+                check("shipped staff-ranks list readable", false);
+            }
+        }
+        List<String> okGroups = List.of("helper", "Mod", "admin", "default", "", "builder");
+        check("/style staff gives only listed groups, case ignored", StaffRanks.mayChange("helper", okGroups)
+                && StaffRanks.mayChange("MOD", okGroups) && StaffRanks.mayChange(" builder ", okGroups));
+        check("/style staff never handles admin or default, even when listed", !StaffRanks.mayChange("admin", okGroups)
+                && !StaffRanks.mayChange("ADMIN", okGroups) && !StaffRanks.mayChange("default", okGroups));
+        check("/style staff refuses unlisted, empty and null groups", !StaffRanks.mayChange("srmod", okGroups)
+                && !StaffRanks.mayChange("", okGroups) && !StaffRanks.mayChange(null, okGroups));
+        check("the tab-completion list drops admin, default and blanks", StaffRanks.clean(okGroups).equals(List.of("helper", "mod", "builder")));
         check("op cannot be allowed", !plan("g:\n  allow: [minecraft.command.op]").errors().isEmpty());
         check("a wildcard cannot be allowed", !plan("g:\n  allow: [arka.*]").errors().isEmpty());
         check("ultracosmetics.* and gadget wildcards cannot be allowed", !plan("g:\n  allow: [ultracosmetics.*]").errors().isEmpty()

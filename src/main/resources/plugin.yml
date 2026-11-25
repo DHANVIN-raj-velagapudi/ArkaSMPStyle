@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, LuckPerms, UltraCosmetics]
 commands:
   style:
     description: Your rank, tags, chat colour and monthly bonus
-    usage: /style [tag|color|bonus|info|reload|give|remove|setup [apply]]
+    usage: /style [tag|color|bonus|info|reload|give|remove|staff|setup [apply]]
     aliases: [rank, ranks, perks]
   craft:
     description: Open a crafting table anywhere (rank command)
@@ -51,6 +51,9 @@ permissions:
   arkastyle.admin:
     description: Reload the config, look up a rank, and give or remove paid ranks (/style give, remove)
     default: op
+  arkastyle.staff:
+    description: Give and take staff and creator groups (/style staff). Never the admin group
+    default: false
   arkastyle.setup:
     description: Create and update the LuckPerms groups and their permissions (/style setup). Console only by design
     default: false

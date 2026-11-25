@@ -101,13 +101,26 @@ roles:
     parents: [srmod]
     allow: [arka.admin, arka.warp.admin, arkaeco.admin.give, arkaeco.admin.take, arkaeco.admin.set,
             arkaeco.admin.reset, arkaeco.admin.reload, arkaeco.shop.admin, arkastyle.admin, mcbackup.admin,
-            luckperms.user.info, luckperms.user.parent.info, luckperms.user.parent.add, luckperms.user.parent.remove,
-            luckperms.user.parent.addtemp, luckperms.user.parent.removetemp, luckperms.group.info,
+            arkastyle.staff,
+            luckperms.user.info, luckperms.user.parent.info, luckperms.group.info,
+            essentials.gamemode, essentials.gamemode.survival, essentials.gamemode.creative,
+            essentials.gamemode.adventure, essentials.gamemode.spectator, essentials.vanish,
             bukkit.command.plugins, bukkit.command.version,
             minecraft.command.ban-ip, minecraft.command.pardon-ip, minecraft.command.gamemode, minecraft.command.time,
             minecraft.command.weather, minecraft.command.whitelist]
     deny: ["@console-only"]
-    remove: [minecraft.command.*, luckperms.*, arkaeco.admin.*, "*"]
+    # luckperms.user.parent.add/remove (and the temp versions) are taken away on purpose: with them an Admin could give
+    # the admin rank to anyone. Admins give and take staff ranks with /style staff, which never handles admin.
+    remove: [minecraft.command.*, luckperms.*, arkaeco.admin.*, "*", luckperms.user.parent.add, luckperms.user.parent.remove,
+             luckperms.user.parent.addtemp, luckperms.user.parent.removetemp]
+
+# ------------------------------------------------------------------------------
+#  STAFF RANKS: what an Admin may give and take with  /style staff give|remove <player> <group>
+#  "admin" and "default" are refused by the plugin whatever is listed here: only the console can make an Admin
+#  (lp user NAME parent add admin). Nobody can change the groups of an Admin or their own with this command.
+# ------------------------------------------------------------------------------
+staff-ranks:
+  grantable: [helper, mod, builder, developer, srmod, youtuber, media]
 
 rank-commands:
   block-in-combat: true                 # /anvil, /ec ... are refused while the player is in PvP combat
@@ -212,6 +225,13 @@ messages:
   remove-usage: "<red>Usage: /style remove [player or uuid] [rank]"
   give-ok: "<green>Gave {player} the {rank}<green> rank until <white>{until}</white>."
   remove-ok: "<green>Took the {rank}<green> rank from {player}."
+  staff-usage: "<red>Usage: /style staff [give|remove] [player] [group]  <gray>(groups: {groups})"
+  staff-given: "<green>{player} is now in the <white>{group}</white> group."
+  staff-removed: "<green>{player} is no longer in the <white>{group}</white> group."
+  staff-never: "<red>The <white>{group}</white> group cannot be given or taken with this command. Only the server console can do that."
+  staff-not-allowed: "<red>You cannot give <white>{group}</white> with this command. Allowed groups: {groups}"
+  staff-self: "<red>You cannot change your own groups."
+  staff-target-admin: "<red>{player} is an Admin: their groups cannot be changed with this command."
   rank-granted: "<green>Thank you for supporting the server! Your {rank}<green> rank is active until <white>{until}</white>."
   purchase-broadcast: "<gold>{player}</gold> <gray>just got the</gray> {rank}<gray> rank. Thank you for supporting the server!"
   unknown-rank: "<red>That rank does not exist. Ranks are listed under 'ranks' in the config."
