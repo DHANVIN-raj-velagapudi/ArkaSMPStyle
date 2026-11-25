@@ -14,6 +14,73 @@ public final class StyleCheck {
         if (!ok) failed++;
     }
 
+    private static RolePlan plan(String yaml) {
+        org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            y.loadFromString("roles:\n" + yaml.indent(2));
+        } catch (org.bukkit.configuration.InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
+        return RolePlan.parse(y.getConfigurationSection("roles"));
+    }
+
+    private static int indexOf(RolePlan p, String name) {
+        for (int i = 0; i < p.groups().size(); i++) if (p.groups().get(i).name().equals(name)) return i;
+        return -1;
+    }
+
+    private static void roleChecks() {
+        // the config that ships with the plugin must be valid and must not allow anything console-only
+        RolePlan shipped = null;
+        try {
+            var y = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
+                    new java.io.File("src/main/resources/config.yml"));
+            shipped = RolePlan.parse(y.getConfigurationSection("roles"));
+        } catch (RuntimeException e) {
+            System.out.println("  (could not read src/main/resources/config.yml: " + e + ")");
+        }
+        check("shipped roles section is valid", shipped != null && shipped.errors().isEmpty());
+        if (shipped != null) {
+            check("shipped roles: 11 groups", shipped.groups().size() == 11);
+            check("shipped roles: parents come before children", indexOf(shipped, "pro") < indexOf(shipped, "ultra")
+                    && indexOf(shipped, "ultra") < indexOf(shipped, "youtuber") && indexOf(shipped, "helper") < indexOf(shipped, "mod")
+                    && indexOf(shipped, "mod") < indexOf(shipped, "srmod") && indexOf(shipped, "ultra") < indexOf(shipped, "srmod")
+                    && indexOf(shipped, "srmod") < indexOf(shipped, "admin"));
+            boolean clean = true;
+            for (RolePlan.Group g : shipped.groups()) for (String n : g.allow()) if (RoleGuard.forbiddenToAllow(n) != null) clean = false;
+            check("shipped roles allow nothing console-only and no wildcard", clean);
+            RolePlan.Group def = shipped.groups().stream().filter(g -> g.name().equals("default")).findFirst().orElseThrow();
+            check("default denies the console-only commands", def.deny().contains("minecraft.command.op")
+                    && def.deny().contains("luckperms.editor") && def.deny().contains("minecraft.command.give")
+                    && def.deny().contains("bukkit.command.plugins"));
+            RolePlan.Group admin = shipped.groups().stream().filter(g -> g.name().equals("admin")).findFirst().orElseThrow();
+            check("admin keeps the single economy nodes but not the umbrella or import",
+                    admin.allow().contains("arkaeco.admin.give") && !admin.allow().contains("arkaeco.admin")
+                            && !admin.allow().contains("arkaeco.admin.import") && admin.deny().contains("arkaeco.admin.import")
+                            && !admin.deny().contains("arkaeco.admin"));
+            check("admin cleans up the old wide grants", admin.remove().containsAll(List.of("minecraft.command.*", "luckperms.*", "arkaeco.admin.*", "*")));
+        }
+        check("op cannot be allowed", !plan("g:\n  allow: [minecraft.command.op]").errors().isEmpty());
+        check("a wildcard cannot be allowed", !plan("g:\n  allow: [arka.*]").errors().isEmpty());
+        check("the star cannot be allowed", !plan("g:\n  allow: [\"*\"]").errors().isEmpty());
+        check("LuckPerms permission editing cannot be allowed", !plan("g:\n  allow: [luckperms.user.permission.set]").errors().isEmpty());
+        check("the economy umbrella cannot be allowed", !plan("g:\n  allow: [arkaeco.admin]").errors().isEmpty());
+        check("a normal permission is fine", plan("g:\n  allow: [arka.stats]").errors().isEmpty());
+        check("allow and deny of the same node is refused", !plan("g:\n  allow: [arka.stats]\n  deny: [arka.stats]").errors().isEmpty());
+        check("a parent loop is refused", !plan("a:\n  parents: [b]\nb:\n  parents: [a]").errors().isEmpty());
+        check("a group cannot be its own parent", !plan("a:\n  parents: [a]").errors().isEmpty());
+        check("a bad group name is refused", !plan("\"bad name\":\n  weight: 1").errors().isEmpty());
+        check("a bad weight is refused", !plan("a:\n  weight: -1").errors().isEmpty() && !plan("a:\n  weight: x").errors().isEmpty());
+        check("LuckPerms special nodes are refused", !plan("a:\n  allow: [group.admin]").errors().isEmpty()
+                && !plan("a:\n  allow: [weight.99]").errors().isEmpty());
+        check("remove may list a wildcard", plan("a:\n  remove: [\"luckperms.*\"]").errors().isEmpty());
+        check("a missing roles section is an error", RolePlan.parse(null).errors().size() == 1);
+        check("@console-only expands and keeps other entries", RoleGuard.expand(List.of("@console-only", "Arka.Stats", "arka.stats"))
+                .contains("minecraft.command.stop") && RoleGuard.expand(List.of("Arka.Stats", "arka.stats")).size() == 1);
+        check("a parent outside the section is reported for LuckPerms to check",
+                plan("a:\n  parents: [somethingelse]").externalParents().equals(List.of("somethingelse")));
+    }
+
     public static void main(String[] args) {
         Ranks.Rank pro = new Ranks.Rank("pro", "pro", "Pro", "[Pro] ", "{name}", 2000, List.of("craft", "trash", "anvil"));
         Ranks.Rank ultra = new Ranks.Rank("ultra", "ultra", "Ultra", "[Ultra] ", "{name}", 5000,
@@ -63,6 +130,8 @@ public final class StyleCheck {
         check("days 30 is fine", GrantArgs.days("30", 366) == 30);
         check("days 0, -5, 367 and text are rejected", GrantArgs.days("0", 366) == -1 && GrantArgs.days("-5", 366) == -1
                 && GrantArgs.days("367", 366) == -1 && GrantArgs.days("thirty", 366) == -1);
+
+        roleChecks();
 
         System.out.println(failed == 0 ? "ALL PASSED" : failed + " FAILED");
         if (failed > 0) System.exit(1);

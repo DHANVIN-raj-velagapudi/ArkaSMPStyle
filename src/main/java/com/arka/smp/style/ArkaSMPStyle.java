@@ -28,6 +28,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
     private Profiles profiles;
     private MonthlyBonus bonus;
     private RankGrants grants;   // null without LuckPerms
+    private RoleSync roleSync;   // null without LuckPerms
     private boolean started;
 
     @Override
@@ -38,7 +39,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
                 return;
             }
             com.arka.smp.core.ConfigUpdater.update(getDataFolder(), () -> getResource("config.yml"),
-                    getPluginMeta().getVersion(), getLogger(), Set.of("ranks", "chat-colors", "tags"));
+                    getPluginMeta().getVersion(), getLogger(), Set.of("ranks", "chat-colors", "tags", "roles"));
             // the three services this plugin needs exist from ArkaSMPCore 1.3.0
             Class.forName("com.arka.smp.core.api.CombatStatus");
             Class.forName("com.arka.smp.core.api.ClaimBlockBonus");
@@ -71,6 +72,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
                     + "so another permission plugin must provide them. /style give and /style remove need LuckPerms.");
         } else {
             grants = new RankGrants();
+            roleSync = new RoleSync(this);
         }
         getLogger().info("ArkaSMPStyle enabled: " + ranks.all().size() + " ranks, " + ranks.colors().size()
                 + " chat colours, " + ranks.tags().size() + " tags.");
@@ -111,6 +113,11 @@ public final class ArkaSMPStyle extends JavaPlugin {
     /** Null when LuckPerms is not installed. */
     RankGrants grants() {
         return grants;
+    }
+
+    /** Null when LuckPerms is not installed. */
+    RoleSync roleSync() {
+        return roleSync;
     }
 
     /** The player's paid rank, or null for a free player. A LuckPerms group gives the node "group.&lt;name&gt;". */

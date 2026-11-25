@@ -56,11 +56,16 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (sub.equals("setup")) {
-            if (!sender.hasPermission("arkastyle.admin")) {
+            if (!sender.hasPermission("arkastyle.setup")) {
                 msg.send(sender, "no-permission");
                 return true;
             }
-            setupLuckPerms(sender);
+            boolean apply = args.length > 1 && args[1].equalsIgnoreCase("apply");
+            if (args.length > 1 && !apply) {
+                msg.send(sender, "setup-usage");
+                return true;
+            }
+            setupLuckPerms(sender, apply);
             return true;
         }
         if (sub.equals("give") || sub.equals("remove")) {
@@ -109,30 +114,80 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         return p != null && (p.isOnline() || p.hasPlayedBefore()) ? p : null;
     }
 
-    /** /style setup: creates the LuckPerms group of every rank and puts its permissions on it (adds only, removes nothing). */
-    private void setupLuckPerms(CommandSender sender) {
+    /**
+     * /style setup shows what would change in LuckPerms and changes nothing. /style setup apply does it.
+     * Both read the "roles" section of the config and refuse to go on if it has a mistake.
+     */
+    private void setupLuckPerms(CommandSender sender, boolean apply) {
         Messages msg = plugin.messages();
-        RankGrants grants = plugin.grants();
-        if (grants == null) {
+        RoleSync sync = plugin.roleSync();
+        if (sync == null) {
             msg.send(sender, "no-luckperms");
             return;
         }
-        List<RankGrants.SetupRank> list = new ArrayList<>();
-        Ranks.Rank previous = null;
-        for (Ranks.Rank r : plugin.ranks().all()) {
-            list.add(new RankGrants.SetupRank(r.group(), previous == null ? null : previous.group(),
-                    plugin.getConfig().getStringList("ranks." + r.id() + ".permissions")));
-            previous = r;
+        RolePlan plan = RolePlan.parse(plugin.getConfig().getConfigurationSection("roles"));
+        if (!plan.errors().isEmpty()) {
+            msg.send(sender, "setup-errors");
+            for (String e : plan.errors()) msg.send(sender, "setup-line", "line", e);
+            return;
         }
-        grants.setup(list).whenComplete((report, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
+        if (!apply) {
+            RoleSync.Report r;
+            try {
+                r = sync.preview(plan);
+            } catch (RuntimeException e) {
+                plugin.getLogger().warning("LuckPerms setup preview failed: " + e);
+                msg.send(sender, "grant-failed");
+                return;
+            }
+            if (!r.errors().isEmpty()) {
+                msg.send(sender, "setup-errors");
+                for (String e : r.errors()) msg.send(sender, "setup-line", "line", e);
+                return;
+            }
+            msg.send(sender, "setup-preview", "count", String.valueOf(r.changes()));
+            for (String line : r.lines()) msg.send(sender, "setup-line", "line", line);
+            msg.send(sender, "setup-file", "file", writeReport("setup-preview.txt", r.full()));
+            msg.send(sender, r.changes() == 0 ? "setup-nothing" : "setup-next");
+            return;
+        }
+        CompletableFuture<RoleSync.Report> run;
+        try {
+            run = sync.apply(plan);
+        } catch (RuntimeException e) {
+            plugin.getLogger().warning("LuckPerms setup failed: " + e);
+            msg.send(sender, "grant-failed");
+            return;
+        }
+        run.whenComplete((r, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
             if (err != null) {
                 plugin.getLogger().warning("LuckPerms setup failed: " + err);
                 msg.send(sender, "grant-failed");
                 return;
             }
-            msg.send(sender, "setup-done");
-            for (String line : report) msg.send(sender, "setup-line", "line", line);
+            if (!r.errors().isEmpty()) {
+                msg.send(sender, "setup-errors");
+                for (String e : r.errors()) msg.send(sender, "setup-line", "line", e);
+                return;
+            }
+            plugin.getLogger().info(sender.getName() + " ran /style setup apply: " + r.changes() + " change(s). Backup: "
+                    + (r.backup() == null ? "-" : r.backup().getName()));
+            msg.send(sender, "setup-done", "count", String.valueOf(r.changes()));
+            for (String line : r.lines()) msg.send(sender, "setup-line", "line", line);
+            msg.send(sender, "setup-file", "file", writeReport("setup-applied.txt", r.full()));
+            if (r.backup() != null) msg.send(sender, "setup-backup", "file", "setup-backups/" + r.backup().getName());
         }));
+    }
+
+    /** Saves the long report next to the config and returns its name for the chat message. */
+    private String writeReport(String name, String text) {
+        try {
+            java.nio.file.Files.writeString(new java.io.File(plugin.getDataFolder(), name).toPath(), text);
+            return "plugins/ArkaSMPStyle/" + name;
+        } catch (java.io.IOException e) {
+            plugin.getLogger().warning("Could not write " + name + ": " + e.getMessage());
+            return "(could not be saved)";
+        }
     }
 
     private void giveOrTake(CommandSender sender, boolean give, String[] args) {
@@ -231,7 +286,10 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             out.addAll(List.of("tag", "color", "bonus", "info"));
-            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove", "setup"));
+            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove"));
+            if (sender.hasPermission("arkastyle.setup")) out.add("setup");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("setup") && sender.hasPermission("arkastyle.setup")) {
+            out.add("apply");
         } else if (args.length >= 2 && sender.hasPermission("arkastyle.admin")
                 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("remove"))) {
             if (args.length == 2) Bukkit.getOnlinePlayers().forEach(o -> out.add(o.getName()));

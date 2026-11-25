@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.0
+
+* New `roles:` section in `config.yml`: every LuckPerms group of the server with its weight, parents, `allow`,
+  `deny` and `remove` lists. Added to your config automatically on update.
+* `/style setup` now **previews** what it would change in LuckPerms and changes nothing. `/style setup apply` does it,
+  after saving the groups as they are to `setup-backups/`. It creates missing groups, sets weights and parents, adds
+  allowed permissions, sets denied ones to false and removes old too wide grants. It only touches what the config lists,
+  never deletes a group, and changes nothing that is already right.
+* Safety checks that stop it before anything changes: parent loops, bad group names, a node in both allow and deny,
+  wildcards, LuckPerms special nodes.
+* A built-in list of console-only permissions (`/op`, `/stop`, `/execute`, `/fill`, `/give`, LuckPerms editing and
+  similar) that can never be allowed on any group. `@console-only` in a deny list blocks them all.
+* `/style setup` needs the new permission `arkastyle.setup`, which nobody has by default, so only the console can run it.
+* The old `permissions:` list under each rank is no longer used; those permissions are now in `roles:`.
+* `PERMISSIONS.md`: every permission, who gets it, and what is blocked.
+
 ## 1.0.0
 
 First release.

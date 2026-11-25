@@ -46,43 +46,49 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 |---|---|
 | `/style reload` | Reload `config.yml` (permission `arkastyle.admin`) |
 | `/style rank <player>` | Show an online player's rank |
-| `/style setup` | Create the rank groups in LuckPerms and put their permissions on them (run once). Needs LuckPerms |
+| `/style setup` and `/style setup apply` | Console only. Preview, then apply, the `roles:` section to LuckPerms. Needs LuckPerms |
 | `/style give <player or uuid> <rank> [days]` | Give a rank for some days (default 30). This is what Tebex runs. Needs LuckPerms |
 | `/style remove <player or uuid> <rank>` | Take a rank away completely. Needs LuckPerms |
 
 ## Install
 
-1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.0.0.jar` in `plugins/`.
+1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.1.0.jar` in `plugins/`.
 2. LuckPerms is needed for ranks. PlaceholderAPI is optional (for TAB and scoreboards). UltraCosmetics is optional.
 3. Start the server. `plugins/ArkaSMPStyle/config.yml` is created and kept up to date on updates
    (`config-version: auto`; your `ranks`, `chat-colors` and `tags` sections are never overwritten).
 
 ## LuckPerms setup
 
-A rank is a LuckPerms group. Run this once as an admin or from the console:
+A rank is a LuckPerms group. The `roles:` section of the config lists every group of your server (players, paid ranks,
+creators, staff) with its weight, its parents, what it is allowed to do and what is blocked. The plugin makes LuckPerms
+match it. Run these **from the console**:
 
 ```
-/style setup
+style setup          (preview: shows what would change, changes nothing)
+style setup apply    (does it, after saving the groups as they are now)
 ```
 
-It creates the `pro` and `ultra` groups if they are missing, makes Ultra inherit Pro, and puts the permissions
-from `ranks.<rank>.permissions` in the config on each group:
+* It creates the groups that are missing, sets weights and parents, puts the allowed permissions on each group, sets
+  the blocked ones to false and removes old, too wide grants you list under `remove`.
+* It only touches what the config lists, never deletes a group, and running it again changes nothing that is already
+  right. Everything it changes is listed in `plugins/ArkaSMPStyle/setup-preview.txt`, and a copy of the groups from
+  before is kept in `plugins/ArkaSMPStyle/setup-backups/`.
+* If the section has a mistake (a loop between parents, a bad name, a permission in both allow and deny) it refuses to
+  run and says where.
+* **Dangerous permissions can never be allowed**, whatever the config says: `/op`, `/stop`, `/execute`, `/fill`,
+  `/give`, LuckPerms editing and similar stay on the console. `@console-only` in a deny list blocks all of them.
+  Wildcards (`*`) cannot be allowed either.
+* It needs the permission `arkastyle.setup`, which nobody has, so only the console can run it.
 
-| Group | Permissions it gets |
-|---|---|
-| pro | `arka.homes.limit.8`, `arka.pwarps.limit.6`, `arka.warp.free` |
-| ultra | `arka.homes.limit.1000`, `arka.pwarps.limit.13`, `arka.warp.free` |
+`/style give` refuses to run until the group exists and tells you to run `/style setup apply`.
 
-It only adds. It never removes or changes anything that is already on a group, so it is safe to run again.
-`/style give` refuses to run until the group exists and tells you to run `/style setup`.
-
-The numbers are totals, not extras: 8 homes is the base 3 plus 5, and 6 player warps is the base 1 plus 5.
-If your base limits in ArkaSMPCore's `config.yml` are different, change the numbers in `ranks.<rank>.permissions`
-(they are the same ArkaSMPCore permissions you could set by hand with `/lp group pro permission set ...`).
-A config from before this option existed is not rewritten on update, so add the `permissions:` lines yourself.
+The home and warp numbers are totals, not extras: 8 homes is the base 3 plus 5, and 6 player warps is the base 1 plus 5.
+If your base limits in ArkaSMPCore's `config.yml` are different, change the numbers in `roles:` and run the preview again.
+If you update from 1.0.0 your `roles:` section is added to the config automatically (a copy of the old file is kept).
 
 The Style plugin itself only checks `group.pro` and `group.ultra`. A player who has both gets Ultra.
-UltraCosmetics permissions are not added by `/style setup`: add those by hand once you have chosen them.
+UltraCosmetics permissions are not part of `roles:`: add those once you have chosen them, with `allow:`.
+See `PERMISSIONS.md` for what every permission does and who gets it.
 
 ### Monthly ranks
 
