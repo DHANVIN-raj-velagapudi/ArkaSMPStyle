@@ -56,7 +56,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (sub.equals("setup")) {
-            if (!sender.hasPermission("arkastyle.setup")) {
+            if (!canSetup(sender)) {
                 msg.send(sender, "no-permission");
                 return true;
             }
@@ -112,6 +112,15 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         OfflinePlayer p = id != null ? Bukkit.getOfflinePlayer(id)
                 : Bukkit.getPlayerExact(arg) != null ? Bukkit.getPlayerExact(arg) : Bukkit.getOfflinePlayerIfCached(arg);
         return p != null && (p.isOnline() || p.hasPlayedBefore()) ? p : null;
+    }
+
+    /**
+     * Only the server console, or someone explicitly given arkastyle.setup in LuckPerms. The permission's default is
+     * false, and Bukkit treats a false default as false for everyone including the console, so the console is allowed
+     * by name here.
+     */
+    private static boolean canSetup(CommandSender sender) {
+        return sender instanceof org.bukkit.command.ConsoleCommandSender || sender.hasPermission("arkastyle.setup");
     }
 
     /**
@@ -287,8 +296,8 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             out.addAll(List.of("tag", "color", "bonus", "info"));
             if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove"));
-            if (sender.hasPermission("arkastyle.setup")) out.add("setup");
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("setup") && sender.hasPermission("arkastyle.setup")) {
+            if (canSetup(sender)) out.add("setup");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("setup") && canSetup(sender)) {
             out.add("apply");
         } else if (args.length >= 2 && sender.hasPermission("arkastyle.admin")
                 && (args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("remove"))) {

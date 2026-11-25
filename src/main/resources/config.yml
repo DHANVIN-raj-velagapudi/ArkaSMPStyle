@@ -56,8 +56,10 @@ ranks:
 # ------------------------------------------------------------------------------
 roles:
   default:
+    # ultracosmetics.* is blocked for everyone here. Ultra (and the groups that inherit it) is given back only the
+    # menu, hats, emotes and suits, because an exact or more specific permission beats a wildcard in LuckPerms.
     deny: ["@console-only", bukkit.command.plugins, bukkit.command.version, bukkit.command.help,
-           minecraft.command.me, minecraft.command.teammsg]
+           minecraft.command.me, minecraft.command.teammsg, ultracosmetics.*]
   pro:
     weight: 30
     allow: [arka.homes.limit.8, arka.pwarps.limit.6, arka.warp.free]

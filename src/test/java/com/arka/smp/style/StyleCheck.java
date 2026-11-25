@@ -50,6 +50,8 @@ public final class StyleCheck {
             for (RolePlan.Group g : shipped.groups()) for (String n : g.allow()) if (RoleGuard.forbiddenToAllow(n) != null) clean = false;
             check("shipped roles allow nothing console-only and no unsafe wildcard", clean);
             RolePlan.Group def = shipped.groups().stream().filter(g -> g.name().equals("default")).findFirst().orElseThrow();
+            check("default blocks UltraCosmetics (deny, which may use a wildcard)", def.deny().contains("ultracosmetics.*")
+                    && def.allow().isEmpty());
             check("default denies the console-only commands", def.deny().contains("minecraft.command.op")
                     && def.deny().contains("luckperms.editor") && def.deny().contains("minecraft.command.give")
                     && def.deny().contains("bukkit.command.plugins"));

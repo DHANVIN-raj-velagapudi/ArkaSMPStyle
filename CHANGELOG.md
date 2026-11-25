@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.2
+
+* UltraCosmetics is blocked for the `default` group: `ultracosmetics.*` is in its `deny` list. Ultra still gets the menu,
+  hats, emotes and suits, because an exact or more specific permission beats a wildcard in LuckPerms.
+* The Cosmetics button in `/style` is only shown to players who have `ultracosmetics.openmenu`.
+* Already on an older version? Your `roles:` section is yours and is not rewritten: add `ultracosmetics.*` to
+  `roles.default.deny` (and the four Ultra lines from 1.2.0 to `roles.ultra.allow`), run `/style reload`, then
+  `style setup` and `style setup apply`.
+
+## 1.2.1
+
+* Fix: `/style setup` and `/style setup apply` said "You cannot do that" even in the server console. The permission
+  `arkastyle.setup` has the default `false`, and Bukkit treats a false default as false for everyone, console included.
+  The console is now allowed by name; anyone else still needs `arkastyle.setup` given to them in LuckPerms.
+
 ## 1.2.0
 
 * UltraCosmetics for **Ultra only**: `roles.ultra.allow` now has `ultracosmetics.openmenu` and the wildcards

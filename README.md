@@ -52,7 +52,7 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 
 ## Install
 
-1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.2.0.jar` in `plugins/`.
+1. Install **ArkaSMPCore 1.3.0+** and put `ArkaSMPStyle-1.2.2.jar` in `plugins/`.
 2. LuckPerms is needed for ranks. PlaceholderAPI is optional (for TAB and scoreboards). UltraCosmetics is optional.
 3. Start the server. `plugins/ArkaSMPStyle/config.yml` is created and kept up to date on updates
    (`config-version: auto`; your `ranks`, `chat-colors` and `tags` sections are never overwritten).

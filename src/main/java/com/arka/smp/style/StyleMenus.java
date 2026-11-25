@@ -75,7 +75,8 @@ final class StyleMenus {
             pl.closeInventory();
             pl.performCommand("style bonus");
         });
-        if (Bukkit.getPluginManager().getPlugin("UltraCosmetics") != null) {
+        // only for players who may open the cosmetics menu (Ultra by default), so nobody taps a button that refuses them
+        if (Bukkit.getPluginManager().getPlugin("UltraCosmetics") != null && p.hasPermission("ultracosmetics.openmenu")) {
             m.set(16, Items.of(Material.CHEST, text("Cosmetics", NamedTextColor.LIGHT_PURPLE),
                     List.of(text("Hats, effects, pets and more", NamedTextColor.GRAY))), pl -> {
                 pl.closeInventory();
