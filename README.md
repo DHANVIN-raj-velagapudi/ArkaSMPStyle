@@ -49,6 +49,7 @@ Rank commands are blocked while a player is in combat (`rank-commands.block-in-c
 | `/style setup` and `/style setup apply` | Console only. Preview, then apply, the `roles:` section to LuckPerms. Needs LuckPerms |
 | `/style give <player or uuid> <rank> [days]` | Give a rank for some days (default 30). This is what Tebex runs. Needs LuckPerms |
 | `/style remove <player or uuid> <rank>` | Take a rank away completely. Needs LuckPerms |
+| `/staff <ban or mute or unmute or vanish or fly or tp> ...` | Staff tools with rules and a log (permissions `arkastyle.staffcmd.ban`, `.mute`, `.vanish`, `.fly`, `.tp`). See the Staff section below |
 | `/style staff <give or remove> <player> <group>` | Admin only. Give or take a staff or creator group (list in `staff-ranks.grantable`). Never handles `admin` or `default`, never changes an Admin or yourself. Needs LuckPerms |
 
 ## Install
@@ -230,6 +231,14 @@ crashing command see an error number to give to an admin. The same problem is wr
 file rotates at 2 MB. To send a problem for diagnosis, send that one file. In game, an admin can run the `errors`
 sub-command of the plugin's admin command to see the latest entries (`errors test` writes a test entry).
 
+## Staff commands, log and admin warnings
+
+The Staff rank has no direct Essentials commands. Staff use `/staff ban <player> <time> <reason>`, `/staff mute <player> [time] <reason>`,
+`/staff unmute <player>`, `/staff vanish`, `/staff fly` and `/staff tp <player|x y z>`. The plugin enforces a short reason for every
+ban and mute, bans of at most `max-ban-days` (3), no permanent bans, and that staff cannot ban or mute an admin or other staff. Everything
+staff do is written to `plugins/ArkaSMPStyle/logs/staff-actions.log` (every `/staff` action, every other command, joins and leaves; passwords never), one line each: time, kind, who, what (on whom, for how long, why),
+the command typed, world and position, and UUID. Bans and mutes also warn every online admin (permission `arkastyle.staffalert`).
+Refused commands are logged as `BLOCKED (...)`. The groups that must use `/staff` are listed in `staff-audit.groups`. See `PERMISSIONS.md`.
 ## Building
 
 ```

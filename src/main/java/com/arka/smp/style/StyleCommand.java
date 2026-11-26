@@ -132,7 +132,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
     private static final DateTimeFormatter UNTIL = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
     /** A player by UUID (with or without dashes) or by name. They must have joined the server before. */
-    private static OfflinePlayer find(String arg) {
+    static OfflinePlayer find(String arg) {
         UUID id = GrantArgs.uuid(arg);
         OfflinePlayer p = id != null ? Bukkit.getOfflinePlayer(id)
                 : Bukkit.getPlayerExact(arg) != null ? Bukkit.getPlayerExact(arg) : Bukkit.getOfflinePlayerIfCached(arg);

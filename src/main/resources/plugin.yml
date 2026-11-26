@@ -12,6 +12,9 @@ commands:
     description: Your rank, tags, chat colour and monthly bonus
     usage: /style [tag|color|bonus|info|reload|give|remove|staff|setup [apply]]
     aliases: [rank, ranks, perks]
+  staff:
+    description: Staff tools with rules and a log - ban, mute, unmute, vanish, fly, tp
+    usage: /staff [ban|mute|unmute|vanish|fly|tp]
   craft:
     description: Open a crafting table anywhere (rank command)
     usage: /craft
@@ -57,6 +60,24 @@ permissions:
   arkastyle.setup:
     description: Create and update the LuckPerms groups and their permissions (/style setup). Console only by design
     default: false
+  arkastyle.staffcmd.ban:
+    description: /staff ban (a timed ban of 3 days at most, with a reason)
+    default: false
+  arkastyle.staffcmd.mute:
+    description: /staff mute and /staff unmute (with a reason)
+    default: false
+  arkastyle.staffcmd.vanish:
+    description: /staff vanish
+    default: false
+  arkastyle.staffcmd.fly:
+    description: /staff fly
+    default: false
+  arkastyle.staffcmd.tp:
+    description: /staff tp (to a player or to coordinates)
+    default: false
+  arkastyle.staffalert:
+    description: Get a warning when staff ban or mute, and cannot be banned or muted by staff. Not watched in the staff log. Give it to admins only
+    default: op
   arkastyle.bypass.combat:
     description: Use rank commands even in combat
     default: false

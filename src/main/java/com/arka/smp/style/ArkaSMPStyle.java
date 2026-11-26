@@ -31,6 +31,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
     private RoleSync roleSync;   // null without LuckPerms
     private boolean started;
     private ErrorLog errors;
+    private StaffLog staffLog;
 
     @Override
     public void onEnable() {
@@ -87,6 +88,15 @@ public final class ArkaSMPStyle extends JavaPlugin {
             grants = new RankGrants();
             roleSync = new RoleSync(this);
         }
+        staffLog = new StaffLog(getDataFolder());
+        StaffAudit audit = new StaffAudit(this, staffLog);
+        pm.registerEvents(audit, this);
+        StaffCommand staffCommand = new StaffCommand(this, audit);
+        bind("staff", staffCommand, staffCommand);
+        if (getConfig().isConfigurationSection("roles.staff")) {
+            String limit = EssentialsLimits.problem(new java.io.File(getDataFolder().getParentFile(), "Essentials/config.yml"));
+            if (limit != null) errors.warn("staff-ban-limit", limit);
+        }
         getLogger().info("ArkaSMPStyle enabled: " + ranks.all().size() + " ranks, " + ranks.colors().size()
                 + " chat colours, " + ranks.tags().size() + " tags.");
     }
@@ -103,6 +113,7 @@ public final class ArkaSMPStyle extends JavaPlugin {
     @Override
     public void onDisable() {
         if (started && profiles != null) profiles.save();
+        if (staffLog != null) staffLog.close();
         if (errors != null) errors.stop();
     }
 

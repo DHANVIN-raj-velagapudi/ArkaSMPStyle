@@ -85,10 +85,26 @@ roles:
   builder:
     weight: 55
     allow: [arka.afk.bypass]
+  # STAFF: a small moderator rank with NO direct Essentials commands. Everything goes through the plugin's /staff command:
+  # /staff ban (3 days at most, with a reason), /staff mute, /staff unmute, /staff vanish, /staff fly, /staff tp. The plugin
+  # checks the rules, does the work and writes plugins/ArkaSMPStyle/logs/staff-actions.log (see PERMISSIONS.md).
+  # No permanent ban, no game mode (so no creative), never /op or any console-only command. Staff cannot be banned or
+  # muted by other staff (the exempt nodes), and Mod, SrMod and Admin are exempt too.
+  # essentials.vanish stays because Essentials checks it while a player is vanished; the plugin cancels a typed /vanish.
+  staff:
+    weight: 58
+    allow: [arkastyle.staffcmd.ban, arkastyle.staffcmd.mute, arkastyle.staffcmd.vanish, arkastyle.staffcmd.fly,
+            arkastyle.staffcmd.tp, essentials.vanish, essentials.tempban.exempt, essentials.mute.exempt]
+    deny: ["@console-only", "@staff-only", essentials.tempban, essentials.tempban.offline, essentials.mute, essentials.tp,
+           essentials.fly, minecraft.command.teleport, essentials.ban, essentials.banip, essentials.unban, essentials.unbanip,
+           essentials.tempban.unlimited, essentials.mute.unlimited, minecraft.command.ban, minecraft.command.ban-ip,
+           minecraft.command.pardon, minecraft.command.pardon-ip, essentials.gamemode, essentials.gamemode.creative,
+           essentials.gamemode.survival, essentials.gamemode.adventure, essentials.gamemode.spectator,
+           minecraft.command.gamemode, minecraft.command.defaultgamemode]
   mod:
     weight: 60
     parents: [helper]
-    allow: [minecraft.command.teleport, arkaeco.admin.balance]
+    allow: [minecraft.command.teleport, arkaeco.admin.balance, essentials.tempban.exempt, essentials.mute.exempt]
   developer:
     weight: 65
     allow: [arka.afk.bypass, arka.leaderboard.hide, arkaeco.baltop.hide, arka.stats, arka.lag,
@@ -97,7 +113,9 @@ roles:
     weight: 70
     parents: [mod, ultra]
     allow: [minecraft.command.ban, minecraft.command.pardon, minecraft.command.banlist, arka.claims.bypass,
-            arkaeco.admin.log, arkaeco.admin.freeze]
+            arkaeco.admin.log, arkaeco.admin.freeze,
+            # bans longer than the Staff limit (Essentials "max-tempban-time") and bans of offline players
+            essentials.tempban.unlimited, essentials.tempban.offline]
   admin:
     weight: 100
     parents: [srmod]
@@ -106,6 +124,8 @@ roles:
     # commands are taken away, /style staff gives the other ranks). Wildcards are not allowed, so every command is listed.
     allow: [arka.admin, arka.warp.admin, arkaeco.admin.give, arkaeco.admin.take, arkaeco.admin.set,
             arkaeco.admin.reset, arkaeco.admin.reload, arkaeco.shop.admin, arkastyle.admin, arkastyle.staff, mcbackup.admin,
+            # staff cannot ban or mute an admin, and every ban or mute a staff member makes warns the admins
+            arkastyle.staffalert, essentials.tempban.exempt, essentials.mute.exempt, essentials.ban.exempt,
             luckperms.user.info, luckperms.user.parent.info, luckperms.group.info,
             bukkit.command.plugins, bukkit.command.version, bukkit.command.timings, bukkit.command.tps,
             # vanilla commands
@@ -148,10 +168,37 @@ roles:
 #  (lp user NAME parent add admin). Nobody can change the groups of an Admin or their own with this command.
 # ------------------------------------------------------------------------------
 staff-ranks:
-  grantable: [helper, mod, builder, developer, srmod, youtuber, media]
+  grantable: [helper, staff, mod, builder, developer, srmod, youtuber, media]
+
+# ------------------------------------------------------------------------------
+#  STAFF AUDIT: staff use /staff ban, mute, unmute, vanish, fly and tp instead of the Essentials commands.
+#  EVERYTHING they do is written to plugins/ArkaSMPStyle/logs/staff-actions.log: the /staff actions, every other command
+#  they type, and when they join and leave. Passwords are never written (see hide-arguments).
+#  One line per action: time | kind | who | what (on whom, for how long, why) | the command | world x y z | uuid
+#  Admins (anyone with arkastyle.staffalert) are warned in chat when staff ban or mute, and are never watched.
+#  Rules the plugin enforces in /staff:
+#    - a ban or mute needs a short reason, a ban needs a time of at most max-ban-days, no permanent bans
+#    - staff cannot ban or mute an admin (anyone with arkastyle.staffalert) or another staff member (the exempt
+#      permissions); that attempt is logged and warns the admins
+#  A member of the groups below who types /tempban, /mute, /vanish, /fly or /tp is told to use /staff, and it is logged.
+# ------------------------------------------------------------------------------
+staff-audit:
+  enabled: true
+  groups: [staff]                       # LuckPerms groups that are watched. Add helper, mod ... to watch them too
+  log: [ban, mute, vanish, fly, tp, command, session]   # what goes into staff-actions.log: the /staff actions,
+                                        # every other command they type (command), and joining and leaving (session)
+  alert: [ban, mute]                    # what warns the admins
+  # Commands staff must never use (their permissions are denied). Typing one is logged and warns the admins.
+  alert-commands: [gamemode, gm, gmc, gms, gma, gmsp, defaultgamemode, op, deop, give, ban, banip, ban-ip, ipban, pardon,
+                   unban, unbanip, stop, execute, lp, luckperms, kill, summon, effect, fill, setblock, clone, whitelist, reload, rl]
+  # Commands with secret arguments: they are logged as "/login ***", never with the password.
+  hide-arguments: [login, l, log, register, reg, unregister, changepassword, cp, passwd, password, 2fa, totp, captcha, email,
+                   setemail, recovery, authme]
+  max-ban-days: 3                       # longest ban staff may give
+  reason-min-length: 3                  # shortest reason (characters) a ban or mute needs
 
 rank-commands:
-  block-in-combat: true                 # /anvil, /ec ... are refused while the player is in PvP combat
+  block-in-combat: true                # /anvil, /ec ... are refused while the player is in PvP combat
 
 # ------------------------------------------------------------------------------
 #  CHAT
@@ -278,3 +325,23 @@ messages:
   setup-usage: "<red>Usage: /style setup  (preview)  or  /style setup apply"
   no-luckperms: "<red>LuckPerms is not installed, so ranks cannot be given or taken."
   grant-failed: "<red>LuckPerms could not make that change. See the console."
+  staff-alert: "<dark_red><bold>STAFF</bold> <white>{staff}</white> <gray>{text}"
+  staff-protected: "<red>You cannot ban or mute an admin or another staff member."
+  staff-need-reason: "<red>Give a short reason (at least {min} letters): <white>/staff ban player 1d griefing</white> or <white>/staff mute player 10m spam</white>"
+  staff-ban-usage: "<red>Give a ban time and a reason: <white>/staff ban player 1d griefing</white> (up to {max} days)"
+  staff-ban-too-long: "<red>Staff can ban for {max} days at most."
+  staff-use-command: "<red>Use <white>/staff {command}</white> instead. It checks the rules and writes the staff log."
+  staff-help: "<gray>Staff commands: <white>{commands}</white> <gray>(for example <white>/staff ban player 1d griefing</white>)"
+  staff-usage-ban: "<red>/staff ban player time reason  <gray>(time up to {max} days, for example 1d)"
+  staff-usage-mute: "<red>/staff mute player [time] reason  <gray>(for example 10m spam)"
+  staff-usage-unmute: "<red>/staff unmute player"
+  staff-usage-switch: "<red>/staff {command} [on|off]"
+  staff-usage-tp: "<red>/staff tp player  <gray>or</gray>  /staff tp x y z"
+  staff-self-target: "<red>You cannot do that to yourself."
+  staff-banned: "<green>Banned <white>{player}</white> for {time}: {reason}"
+  staff-muted: "<green>Muted <white>{player}</white> {until}: {reason}"
+  staff-unmuted: "<green>Unmuted <white>{player}</white>."
+  staff-already-muted: "<yellow>{player} is already muted. Use /staff unmute to undo it."
+  staff-not-muted: "<yellow>{player} is not muted."
+  staff-done: "<green>{text}"
+  staff-unavailable: "<red>That needs Essentials, which did not answer. Tell an admin."

@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.6.0
+
+### Added
+- **New `staff` rank** (`roles.staff`, weight 58, between Builder and Mod) with **no direct Essentials commands**. Everything goes
+  through the plugin's new **`/staff`** command, which checks the rules, does the work, writes the log and warns the admins:
+  - `/staff ban <player> <time> <reason>`: a timed ban of **3 days at most** (also offline players). Uses Essentials' `/tempban`, so
+    admins can undo it with `/unban` as usual.
+  - `/staff mute <player> [time] <reason>` and `/staff unmute <player>`: uses Essentials' `/mute`, so there is one list of muted players.
+  - `/staff vanish [on|off]`, `/staff fly [on|off]`, `/staff tp <player>` or `/staff tp <x> <y> <z>`.
+  - Permissions: `arkastyle.staffcmd.ban`, `.mute`, `.vanish`, `.fly`, `.tp`. The Staff group is denied `essentials.tempban`,
+    `essentials.mute`, `essentials.tp`, `essentials.fly` and `minecraft.command.teleport`, plus permanent bans, `/unban`, every game
+    mode (so no creative), `/op`, every console-only command and `/give`, `/kill` and the other staff-only commands.
+  - A watched staff member who types `/tempban`, `/mute`, `/vanish`, `/fly` or `/tp` is told to use `/staff` instead (and it is
+    logged). `essentials.vanish` stays on the group only because Essentials looks at it while a player is vanished.
+- **Rules enforced by `/staff`:** a ban or mute needs a short reason (`staff-audit.reason-min-length`, default 3 letters); a ban needs a
+  time of at most `staff-audit.max-ban-days` (default 3); no permanent bans; staff **cannot ban or mute an admin** (anyone with
+  `arkastyle.staffalert`) **or another staff member** (the `essentials.tempban.exempt` / `essentials.mute.exempt` permissions), also
+  when the target is offline (checked through LuckPerms). A refused attempt on an admin or staff is written to the log as
+  `BLOCKED (...)` and warns the admins.
+- **Staff action log: everything staff do.** Every ban, mute, unmute, vanish, fly and teleport, **every other command they type**,
+  and **when they join and leave** is written to its own file, `plugins/ArkaSMPStyle/logs/staff-actions.log` (rotated at 5 MB, 10 old
+  files kept). Passwords are never written: `/login`, `/register`, `/changepassword` and the other commands in
+  `staff-audit.hide-arguments` are logged as `/login ***`. One line per action:
+  `time | kind | who | what (on whom, for how long, why) | the command typed | world x y z | uuid`, for example
+  `2026-11-26 14:03:11 | BAN | Steve | temp-banned Griefer for 2d: griefing | /staff ban Griefer 2d griefing | world 120 64 -30 | <uuid>`.
+- **Admins are warned.** When staff ban or mute, every online admin (permission `arkastyle.staffalert`) gets a chat line, and the
+  console gets one too. They are also warned when staff **type a command they must never use** (`/gamemode`, `/op`, `/give`,
+  `/ban`, `/stop`... the list is `staff-audit.alert-commands`). Admins are never watched themselves.
+- **The Essentials limit is a second layer:** put `max-tempban-time: 259200` in `plugins/Essentials/config.yml`. At startup the plugin
+  reads that setting and writes a warning to the console and `logs/errors.log` when it is missing or longer than 3 days.
+- `/style staff give <player> staff` and `/style staff remove <player> staff` work (`staff` is in `staff-ranks.grantable`).
+- New `staff-audit:` config section (`enabled`, `groups`, `log`, `alert`, `alert-commands`, `hide-arguments`, `max-ban-days`, `reason-min-length`) and new messages.
+  Which groups are watched (and must use `/staff`) is `staff-audit.groups` (default only `staff`; add `helper`, `mod`... to include them).
+
+### Notes for server owners
+- Your `roles` section and `staff-ranks.grantable` list are yours and are **not** changed by an update. Copy the `staff` block,
+  the two `essentials.tempban.exempt` / `essentials.mute.exempt` lines on `mod`, the two `essentials.tempban.unlimited` /
+  `essentials.tempban.offline` lines on `srmod` and the `arkastyle.staffalert` and three `.exempt` lines on `admin` from the new
+  config, add `staff` to `staff-ranks.grantable`, then run `/style setup` (preview) and `/style setup apply` from the console.
+- The new `staff-audit` section and its messages are added to your config automatically.
+- `/staff` needs Essentials (it runs `/tempban` and `/mute` for the staff member) and reads whether a player is muted from it.
+  If Essentials does not answer, `/staff ban` and `/staff mute` tell the staff member and write a warning to `errors.log`.
+- If another plugin already has a `/staff` command, use `/arkasmpstyle:staff`.
 ## 1.5.0
 
 ### Added

@@ -41,7 +41,7 @@ public final class StyleCheck {
         }
         check("shipped roles section is valid", shipped != null && shipped.errors().isEmpty());
         if (shipped != null) {
-            check("shipped roles: 11 groups", shipped.groups().size() == 11);
+            check("shipped roles: 12 groups", shipped.groups().size() == 12);
             check("shipped roles: parents come before children", indexOf(shipped, "pro") < indexOf(shipped, "ultra")
                     && indexOf(shipped, "ultra") < indexOf(shipped, "youtuber") && indexOf(shipped, "helper") < indexOf(shipped, "mod")
                     && indexOf(shipped, "mod") < indexOf(shipped, "srmod") && indexOf(shipped, "ultra") < indexOf(shipped, "srmod")
@@ -61,6 +61,43 @@ public final class StyleCheck {
                             && !admin.allow().contains("arkaeco.admin.import") && admin.deny().contains("arkaeco.admin.import")
                             && !admin.deny().contains("arkaeco.admin"));
             check("admin cleans up the old wide grants", admin.remove().containsAll(List.of("minecraft.command.*", "luckperms.*", "arkaeco.admin.*", "*")));
+            // Staff: ban up to 3 days, mute, vanish, tp and fly; no creative, no op, no permanent ban
+            RolePlan.Group staff = shipped.groups().stream().filter(g -> g.name().equals("staff")).findFirst().orElseThrow();
+            check("staff may use /staff ban, mute, vanish, fly and tp", staff.allow().containsAll(List.of(
+                    "arkastyle.staffcmd.ban", "arkastyle.staffcmd.mute", "arkastyle.staffcmd.vanish", "arkastyle.staffcmd.fly",
+                    "arkastyle.staffcmd.tp")));
+            check("staff has no direct Essentials power: tempban, mute, tp and fly are denied and not allowed",
+                    staff.deny().containsAll(List.of("essentials.tempban", "essentials.tempban.offline", "essentials.mute",
+                            "essentials.tp", "essentials.fly", "minecraft.command.teleport"))
+                            && staff.allow().stream().noneMatch(n -> n.equals("essentials.tempban") || n.equals("essentials.mute")
+                            || n.equals("essentials.tp") || n.equals("essentials.fly") || n.equals("minecraft.command.teleport")));
+            check("staff keeps essentials.vanish only for Essentials' own checks (a typed /vanish is cancelled by the plugin)",
+                    staff.allow().contains("essentials.vanish"));
+            check("staff is not exempt-less: other staff cannot ban or mute staff",
+                    staff.allow().containsAll(List.of("essentials.tempban.exempt", "essentials.mute.exempt")));
+            check("staff has nothing else (no ban, kick, unban, give or game mode in its allow list)",
+                    staff.allow().stream().noneMatch(n -> n.equals("essentials.ban") || n.equals("essentials.banip")
+                            || n.equals("essentials.unban") || n.startsWith("essentials.gamemode") || n.equals("minecraft.command.gamemode")
+                            || n.equals("minecraft.command.ban") || n.equals("minecraft.command.op") || n.equals("essentials.tempban.unlimited")
+                            || n.equals("essentials.mute.unlimited") || n.contains("*")));
+            check("staff is denied permanent bans, unbanning and the unlimited tempban",
+                    staff.deny().containsAll(List.of("essentials.ban", "essentials.banip", "essentials.unban", "essentials.unbanip",
+                            "minecraft.command.ban", "minecraft.command.ban-ip", "essentials.tempban.unlimited")));
+            check("staff is denied every game mode, so no creative",
+                    staff.deny().containsAll(List.of("essentials.gamemode", "essentials.gamemode.creative", "essentials.gamemode.survival",
+                            "essentials.gamemode.adventure", "essentials.gamemode.spectator", "minecraft.command.gamemode",
+                            "minecraft.command.defaultgamemode")));
+            check("staff is denied op and every console-only command, and give, kill and the other staff-only ones",
+                    staff.deny().containsAll(RoleGuard.CONSOLE_ONLY) && staff.deny().contains("minecraft.command.op")
+                            && staff.deny().containsAll(RoleGuard.STAFF_ONLY));
+            check("staff sits between Builder and Mod and inherits nothing",
+                    staff.weight() > 55 && staff.weight() < 60 && staff.parents().isEmpty());
+            RolePlan.Group srm = shipped.groups().stream().filter(g -> g.name().equals("srmod")).findFirst().orElseThrow();
+            check("only SrMod (and so Admin) may ban for longer than the staff limit", srm.allow().contains("essentials.tempban.unlimited")
+                    && indexOf(shipped, "srmod") < indexOf(shipped, "admin"));
+            RolePlan.Group modg = shipped.groups().stream().filter(g -> g.name().equals("mod")).findFirst().orElseThrow();
+            check("staff cannot ban or mute Mod (and so SrMod and Admin): they are exempt", modg.allow().containsAll(List.of(
+                    "essentials.tempban.exempt", "essentials.mute.exempt")));
         }
         // admin: gamemode and vanish (Essentials owns these commands), rank giving only through /style staff
         if (shipped != null) {
@@ -68,6 +105,11 @@ public final class StyleCheck {
             check("admin may use gamemode and vanish (vanilla and Essentials)", adm.allow().containsAll(List.of(
                     "minecraft.command.gamemode", "essentials.gamemode", "essentials.gamemode.survival", "essentials.gamemode.creative",
                     "essentials.gamemode.adventure", "essentials.gamemode.spectator", "essentials.vanish")));
+            check("admin is warned about staff bans and mutes and is exempt from them",
+                    adm.allow().containsAll(List.of("arkastyle.staffalert", "essentials.tempban.exempt", "essentials.mute.exempt",
+                            "essentials.ban.exempt")));
+            check("staff is not given the admin alert permission", shipped.groups().stream()
+                    .filter(g -> g.name().equals("staff")).noneMatch(g -> g.allow().contains("arkastyle.staffalert")));
             check("admin gives ranks through /style staff, not with raw LuckPerms parent commands",
                     adm.allow().contains("arkastyle.staff") && !adm.allow().contains("luckperms.user.parent.add")
                             && adm.remove().containsAll(List.of("luckperms.user.parent.add", "luckperms.user.parent.remove",
@@ -76,6 +118,7 @@ public final class StyleCheck {
                 var yy = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
                         new java.io.File("src/main/resources/config.yml"));
                 List<String> grantable = yy.getStringList("staff-ranks.grantable");
+                check("/style staff may give the staff rank", grantable.contains("staff"));
                 check("shipped staff-ranks list has staff groups and never admin or default",
                         grantable.containsAll(List.of("helper", "mod", "builder", "developer")) && !grantable.contains("admin")
                                 && !grantable.contains("default"));
@@ -157,6 +200,94 @@ public final class StyleCheck {
                 plan("a:\n  parents: [somethingelse]").externalParents().equals(List.of("somethingelse")));
     }
 
+    private static StaffActions.Action act(String label, String... args) {
+        return StaffActions.parse(label, args);
+    }
+
+    private static void staffActionChecks() {
+        var tb = act("tempban", "Griefer", "2d", "griefing", "the", "spawn");
+        check("tempban: target, time and reason are read", tb != null && tb.kind() == StaffActions.Kind.BAN && tb.target().equals("Griefer")
+                && tb.duration().equals("2d") && tb.reason().equals("griefing the spawn"));
+        check("tempban text reads well", tb.text().equals("temp-banned Griefer for 2d: griefing the spawn"));
+        check("tempban with no reason has an empty reason", act("tempban", "Bob", "1d").reason().isEmpty());
+        check("aliases are folded in (etempban, essentials:tempban, /v, /pardon, /s)",
+                act("etempban", "A", "1d", "x").command().equals("tempban") && act("essentials:tempban", "A", "1d", "x") != null
+                        && act("v").kind() == StaffActions.Kind.VANISH && act("pardon", "A").command().equals("unban")
+                        && act("s", "A").command().equals("tphere"));
+        check("a plain ban is called permanent", act("ban", "A", "cheating").text().equals("banned A permanently: cheating"));
+        check("mute with a time and a reason", act("mute", "Spammer", "10m", "spam").text().equals("muted Spammer for 10m: spam")
+                && act("mute", "Spammer", "10m", "spam").duration().equals("10m"));
+        check("mute with only a reason: the second word is the reason", act("mute", "Spammer", "caps").reason().equals("caps"));
+        check("mute on its own is a toggle with no reason", act("mute", "Spammer").text().equals("toggled mute on Spammer")
+                && act("mute", "Spammer").reason().isEmpty());
+        check("vanish and fly are read", act("vanish").text().equals("toggled vanish") && act("fly", "off").text().equals("turned fly off")
+                && act("fly", "Bob").text().equals("toggled fly for Bob") && act("fly", "Bob", "on").text().equals("turned fly on for Bob"));
+        check("teleports are read", act("tp", "Bob").text().equals("teleported to Bob") && act("tp", "Bob", "Sue").text().equals("teleported Bob to Sue")
+                && act("tp", "100", "64", "-20").text().equals("teleported to coordinates 100 64 -20")
+                && act("tphere", "Bob").text().equals("teleported Bob to themselves") && act("tp", "~", "~5", "~").text().startsWith("teleported to coordinates"));
+        check("other commands are not tracked", act("home") == null && act("gamemode", "creative") == null && act("msg", "a", "b") == null);
+        check("permission nodes for a typed command", java.util.Arrays.equals(StaffActions.permissionNodes("/Tempban"),
+                new String[]{"essentials.tempban", "minecraft.command.tempban"})
+                && StaffActions.permissionNodes("v")[0].equals("essentials.vanish"));
+
+        check("/staff ban rules: time needed, 3 days at most, reason needed",
+                "staff-ban-usage".equals(StaffActions.problem(true, "", "griefing", 3, 3))
+                        && "staff-ban-usage".equals(StaffActions.problem(true, "soon", "griefing", 3, 3))
+                        && "staff-ban-too-long".equals(StaffActions.problem(true, "73h", "griefing", 3, 3))
+                        && "staff-ban-too-long".equals(StaffActions.problem(true, "1mo", "griefing", 3, 3))
+                        && "staff-need-reason".equals(StaffActions.problem(true, "3d", "", 3, 3))
+                        && "staff-need-reason".equals(StaffActions.problem(true, "3d", "ab", 3, 3))
+                        && StaffActions.problem(true, "3d", "griefing", 3, 3) == null
+                        && StaffActions.problem(true, "30m", "bad", 3, 3) == null);
+        check("/staff mute rules: only a reason is needed",
+                "staff-need-reason".equals(StaffActions.problem(false, "", "  ", 3, 3))
+                        && StaffActions.problem(false, "", "spam", 3, 3) == null
+                        && StaffActions.problem(false, "10m", "spam", 3, 3) == null);
+        check("ban times: 3d, 72h, 1d12h, 90m", StaffActions.seconds("3d") == 259200 && StaffActions.seconds("72h") == 259200
+                && StaffActions.seconds("1d12h") == 129600 && StaffActions.seconds("90m") == 5400);
+        check("ban times: 1mo is 30 days, 1w is 7, 1y is 365, upper case works",
+                StaffActions.seconds("1mo") == 30 * 86400 && StaffActions.seconds("1w") == 7 * 86400
+                        && StaffActions.seconds("1y") == 365 * 86400 && StaffActions.seconds("2D") == 172800);
+        check("ban times: junk and empty are rejected", StaffActions.seconds("") == -1 && StaffActions.seconds(null) == -1
+                && StaffActions.seconds("soon") == -1 && StaffActions.seconds("3") == -1 && StaffActions.seconds("d3") == -1
+                && StaffActions.seconds("3d x") == -1 && StaffActions.seconds("99999999999d") == -1);
+        check("3 days is allowed, 3 days and a second is not", StaffActions.seconds("3d") <= 3 * 86400 && StaffActions.seconds("72h1s") > 3 * 86400);
+
+        var home = StaffActions.generic("/Home", new String[]{"base"}, false);
+        check("any other command is logged with its arguments", home.kind() == StaffActions.Kind.COMMAND
+                && home.text().equals("typed /home base") && home.command().equals("home"));
+        check("a command with no arguments reads cleanly", StaffActions.generic("spawn", new String[0], false).text().equals("typed /spawn"));
+        var login = StaffActions.generic("login", new String[]{"hunter2"}, true);
+        check("a login command is logged without the password", login.text().equals("typed /login (arguments hidden)")
+                && !login.text().contains("hunter2") && StaffActions.HIDDEN.containsAll(List.of("login", "register", "changepassword", "l")));
+        check("namespaced commands are named plainly", StaffActions.generic("essentials:home", new String[0], false).command().equals("home"));
+        check("joining and leaving are logged", StaffActions.session(true).text().equals("joined the server")
+                && StaffActions.session(false).text().equals("left the server") && StaffActions.session(true).kind() == StaffActions.Kind.SESSION);
+        check("the forbidden list holds the commands the Staff rank is denied",
+                StaffActions.FORBIDDEN.containsAll(List.of("gamemode", "gm", "op", "give", "ban", "unban", "stop", "execute", "lp")));
+        check("kinds have the ids used in the config", StaffActions.Kind.COMMAND.id().equals("command")
+                && StaffActions.Kind.SESSION.id().equals("session"));
+        check("line breaks cannot split one action over two log lines",
+                !StaffActions.clean("a\nb\r\nc").contains("\n") && StaffActions.clean("a\nb").equals("a b"));
+        String line = StaffActions.line("2026-11-26 14:03:11", tb, "Steve", "uuid-1", "/tempban Griefer 2d griefing", "world 120 64 -30");
+        check("log line has time, kind, who, what, typed command, place and uuid", line.equals(
+                "2026-11-26 14:03:11 | BAN | Steve | temp-banned Griefer for 2d: griefing the spawn | /tempban Griefer 2d griefing | world 120 64 -30 | uuid-1"));
+
+        try {
+            java.io.File dir = java.nio.file.Files.createTempDirectory("stafflog").toFile();
+            StaffLog log = new StaffLog(dir);
+            log.write("first line");
+            log.write("second line");
+            log.close();
+            var written = java.nio.file.Files.readAllLines(log.file().toPath());
+            check("the staff log is its own file, logs/staff-actions.log, one line per action",
+                    log.file().getName().equals("staff-actions.log") && log.file().getParentFile().getName().equals("logs")
+                            && written.equals(List.of("first line", "second line")));
+        } catch (java.io.IOException e) {
+            check("the staff log can be written: " + e, false);
+        }
+    }
+
     public static void main(String[] args) {
         Ranks.Rank pro = new Ranks.Rank("pro", "pro", "Pro", "[Pro] ", "{name}", 2000, List.of("craft", "trash", "anvil"));
         Ranks.Rank ultra = new Ranks.Rank("ultra", "ultra", "Ultra", "[Ultra] ", "{name}", 5000,
@@ -208,7 +339,13 @@ public final class StyleCheck {
                 && GrantArgs.days("367", 366) == -1 && GrantArgs.days("thirty", 366) == -1);
 
         roleChecks();
+        staffActionChecks();
 
+        check("Essentials limit: -1 and 0 are a problem", EssentialsLimits.problem(-1) != null && EssentialsLimits.problem(0) != null);
+        check("Essentials limit: more than 3 days is a problem, 3 days and less are fine",
+                EssentialsLimits.problem(259201) != null && EssentialsLimits.problem(259200) == null && EssentialsLimits.problem(86400) == null);
+        check("Essentials limit: the message names the exact setting and value",
+                EssentialsLimits.problem(-1).contains("max-tempban-time: 259200"));
         System.out.println(failed == 0 ? "ALL PASSED" : failed + " FAILED");
         if (failed > 0) System.exit(1);
     }

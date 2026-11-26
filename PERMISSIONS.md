@@ -81,6 +81,7 @@ and they are kept as a reference and for fixing one thing by hand.
 | youtuber | ultra | 45 |
 | helper | | 50 |
 | builder | | 55 |
+| staff | | 58 |
 | mod | helper | 60 |
 | developer | | 65 |
 | srmod | mod, ultra | 70 |
@@ -93,6 +94,7 @@ Limits (homes, player warps) take the highest number the player has.
 /lp creategroup media
 /lp creategroup youtuber
 /lp creategroup helper
+/lp creategroup staff
 /lp creategroup mod
 /lp creategroup srmod
 /lp creategroup developer
@@ -109,6 +111,7 @@ Limits (homes, player warps) take the highest number the player has.
 /lp group youtuber setweight 45
 /lp group helper setweight 50
 /lp group builder setweight 55
+/lp group staff setweight 58
 /lp group mod setweight 60
 /lp group developer setweight 65
 /lp group srmod setweight 70
@@ -117,6 +120,57 @@ Limits (homes, player warps) take the highest number the player has.
 
 `pro` and `ultra` and their permissions already exist from `/style setup`.
 
+### The Staff rank (ArkaSMPStyle 1.6.0 and newer)
+
+A small moderator rank: **ban a player for up to 3 days, mute, vanish, teleport and fly. No creative, no op.**
+Staff have **no direct Essentials commands**. Everything goes through `/staff`, so the plugin enforces the rules and writes the log.
+
+| What Staff can do | Command | Permission |
+|---|---|---|
+| Ban for a limited time | `/staff ban <player> <time> <reason>` (for example `/staff ban Bob 1d griefing`) | `arkastyle.staffcmd.ban` |
+| Mute a player in chat | `/staff mute <player> [time] <reason>` (for example `/staff mute Bob 10m spam`) | `arkastyle.staffcmd.mute` |
+| Unmute | `/staff unmute <player>` | `arkastyle.staffcmd.mute` |
+| Vanish | `/staff vanish [on\|off]` | `arkastyle.staffcmd.vanish` |
+| Fly | `/staff fly [on\|off]` | `arkastyle.staffcmd.fly` |
+| Teleport | `/staff tp <player>` or `/staff tp <x> <y> <z>` | `arkastyle.staffcmd.tp` |
+| Cannot be banned or muted by staff | (nothing to type) | `essentials.tempban.exempt`, `essentials.mute.exempt`: Staff, Mod, SrMod and Admin have them |
+
+What Staff is denied on purpose: `essentials.tempban`, `essentials.tempban.offline`, `essentials.mute`, `essentials.tp`,
+`essentials.fly`, `minecraft.command.teleport` (so no direct commands), `essentials.ban`, `essentials.banip`, `essentials.unban`,
+`essentials.unbanip`, `minecraft.command.ban`, `minecraft.command.ban-ip`, `essentials.tempban.unlimited`, every game mode
+(`essentials.gamemode` and each mode, `minecraft.command.gamemode`, `minecraft.command.defaultgamemode`), `/op` and the whole
+console-only list, and the staff-only commands (`/give`, `/kill`, `/summon`...). `essentials.vanish` stays on the group only because
+Essentials checks it while a player is vanished; a typed `/vanish` is cancelled by the plugin and the player is told to use `/staff vanish`.
+
+**Rules `/staff` enforces** (config section `staff-audit`):
+
+- A ban or mute needs a **short reason** (`reason-min-length`, 3 letters). A ban needs a time of at most `max-ban-days` (3).
+  There are no permanent bans.
+- Staff **cannot ban or mute an admin or another staff member**: anyone with `arkastyle.staffalert`, `essentials.tempban.exempt`
+  (for bans) or `essentials.mute.exempt` (for mutes) is refused, also when offline (checked through LuckPerms). The attempt is
+  logged and warns the admins.
+- **Everything staff do is written to `plugins/ArkaSMPStyle/logs/staff-actions.log`**: every `/staff` action (ban, mute, unmute, vanish,
+  fly, teleport), every other command they type, and when they join and leave. Each line has the time, who, what (on whom, for how
+  long, why), the command typed, the place and the UUID. Refused commands are logged as `BLOCKED (...)`. Passwords are never
+  written (`/login` and similar are logged as `/login ***`, see `hide-arguments`). The file rotates at 5 MB and keeps 10 old files.
+- Admins are also warned when staff type a command they must never use (`/gamemode`, `/op`, `/give`, `/ban`...: `alert-commands`).
+- Every ban and mute warns the online admins (`arkastyle.staffalert`, which only Admin has). Anyone with that permission is not
+  watched, so give it to admins only.
+- The groups that must use `/staff` are `staff-audit.groups` (default `staff`).
+
+Bans and mutes are carried out with Essentials' own `/tempban` and `/mute` (run by the console), so they appear in Essentials and
+admins can undo them with `/unban` and `/mute` as usual. **The 3-day limit is also an Essentials setting.** As a second layer, open
+`plugins/Essentials/config.yml`, set
+
+```
+max-tempban-time: 259200
+```
+
+(259200 seconds is 3 days; `-1` means no limit) and restart the server. SrMod and Admin have `essentials.tempban.unlimited`, so
+they are not held to it. ArkaSMPStyle reads this setting when it starts and warns in the console and in `logs/errors.log` if it is
+missing or longer than 3 days.
+
+Give it with `/style staff give <player> staff` (an Admin can) and take it with `/style staff remove <player> staff`.
 ### Every Arka permission, what it does, and who gets it
 
 **ArkaSMPCore**
@@ -160,6 +214,8 @@ Limits (homes, player warps) take the highest number the player has.
 | `arkastyle.admin` | Reload, look up a rank, give and remove paid ranks | admin only |
 | `arkastyle.setup` | `/style setup` and `/style setup apply`: create and change LuckPerms groups | **nobody** (the console only) |
 | `arkastyle.staff` | `/style staff give or remove <player> <group>`: give and take staff and creator groups (helper, mod, builder, developer, srmod, youtuber, media). Never admin or default, never an Admin's groups, never your own | admin only |
+| `arkastyle.staffcmd.ban`, `.mute`, `.vanish`, `.fly`, `.tp` | `/staff ban`, `/staff mute` and `/staff unmute`, `/staff vanish`, `/staff fly`, `/staff tp`: the only way the Staff rank bans, mutes, vanishes, flies and teleports | staff |
+| `arkastyle.staffalert` | Warned in chat when staff ban or mute; staff cannot ban or mute you; you are not written to the staff log | admin only |
 | `essentials.gamemode`, `essentials.gamemode.survival, .creative, .adventure, .spectator` | `/gamemode` and `/gm` (Essentials replaces the vanilla command when it is installed) | admin |
 | `essentials.vanish` | `/vanish` (Essentials) | admin |
 
@@ -226,6 +282,7 @@ Check with `/lp verbose` while equipping a hat as an Ultra player.
 /lp group admin permission set luckperms.user.info true
 /lp group admin permission set luckperms.user.parent.info true
 /lp group admin permission set arkastyle.staff true
+/lp group admin permission set arkastyle.staffalert true
 /lp group admin permission set essentials.gamemode true
 /lp group admin permission set essentials.gamemode.survival true
 /lp group admin permission set essentials.gamemode.creative true

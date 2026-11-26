@@ -49,6 +49,17 @@ final class RankGrants {
                 .anyMatch(n -> n.getGroupName().equalsIgnoreCase(group) && !n.hasExpired()));
     }
 
+    /** True when the user holds any of these permissions right now (loads the user from LuckPerms, also when offline). */
+    CompletableFuture<Boolean> hasAnyPermission(UUID id, String... nodes) {
+        return lp().getUserManager().loadUser(id).thenApply(user -> {
+            var data = user.getCachedData().getPermissionData();
+            for (String n : nodes) {
+                if (data.checkPermission(n).asBoolean()) return true;
+            }
+            return false;
+        });
+    }
+
     /** Removes the group from the user completely (temporary and permanent). */
     CompletableFuture<Result> take(UUID id, String group) {
         return lp().getUserManager().modifyUser(id, user -> user.data().clear(
