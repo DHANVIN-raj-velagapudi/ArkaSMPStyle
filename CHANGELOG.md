@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.5.0
+
+### Added
+- **Error log.** When something goes wrong the plugin now writes a readable entry to `plugins/ArkaSMPStyle/logs/errors.log` and a
+  short line to the console, so a problem can be sent for diagnosis as one small file. Each entry has a number
+  (like `E-1A2`), the time, the plugin and server version, which feature failed, who was involved (player, command,
+  arguments), and the full stack trace.
+- **Automatic capture.** Every warning or error the plugin logs, and every error the server prints that comes from this
+  plugin's code (events, scheduled tasks), is copied into the file too, so errors nobody expected are not lost.
+- **Commands never spill errors on players.** A crash inside a command is logged and the player sees
+  "Something went wrong... tell an admin this number: E-1A2" (`messages.error-internal`).
+- `/style errors` (permission `arkastyle.admin`) shows the last problems in game, `/style errors test` writes a test entry. LuckPerms failures (ranks, staff ranks, `/style setup`) are logged with the full error.
+- The same problem is written at most 5 times a minute (the rest is counted), the file is rotated at 2 MB (3 old files
+  are kept), writing happens on its own thread and cannot slow the game down.
+
 ## 1.4.1
 
 ### Changed

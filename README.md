@@ -221,6 +221,15 @@ formats chat, set `chat.enabled: false` and use `%style_prefix%` there instead.
 | `profiles.yml` | Each player's tag, colour and last bonus month |
 | `data-backups/` | Automatic copies kept before a data format change |
 
+## Error log
+
+If something goes wrong, the plugin writes it to `plugins/ArkaSMPStyle/logs/errors.log` (and a short line to the console):
+a numbered entry with the time, versions, which feature failed, who was involved and the full stack trace. Warnings and
+errors the plugin prints, and server errors that come from its code, are copied there automatically. Players who hit a
+crashing command see an error number to give to an admin. The same problem is written at most 5 times a minute, and the
+file rotates at 2 MB. To send a problem for diagnosis, send that one file. In game, an admin can run the `errors`
+sub-command of the plugin's admin command to see the latest entries (`errors test` writes a test entry).
+
 ## Building
 
 ```

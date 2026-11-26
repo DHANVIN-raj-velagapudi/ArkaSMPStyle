@@ -229,6 +229,7 @@ menu:
 messages:
   prefix: "<gradient:#ff8a00:#e52e71>Style</gradient> <dark_gray>»</dark_gray> "
   no-permission: "<red>You cannot do that."
+  error-internal: "<red>Something went wrong with that command. Please tell an admin this number: <white>{id}"
   players-only: "<red>Only players can use this."
   needs-rank: "<red>/{command} needs the {rank}<red> rank. Type <yellow>/style</yellow> to see what each rank gives."
   in-combat: "<red>You cannot use /{command} while in combat."

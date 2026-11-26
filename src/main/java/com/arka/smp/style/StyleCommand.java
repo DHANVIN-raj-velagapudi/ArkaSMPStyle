@@ -68,6 +68,23 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             setupLuckPerms(sender, apply);
             return true;
         }
+        if (sub.equals("errors")) {
+            if (!sender.hasPermission("arkastyle.admin")) {
+                msg.send(sender, "no-permission");
+                return true;
+            }
+            var elog = plugin.errors();
+            if (args.length > 1 && args[1].equalsIgnoreCase("test")) {
+                String id = elog.warn("errors.test", "Test entry written by /style errors test", "by", sender.getName());
+                msg.send(sender, "setup-line", "line", "Wrote test entry " + id + " to plugins/ArkaSMPStyle/logs/errors.log");
+                return true;
+            }
+            var list = elog.recent(8);
+            msg.send(sender, "setup-line", "line", "Error log (" + list.size() + " recent), file: plugins/ArkaSMPStyle/logs/errors.log");
+            if (list.isEmpty()) msg.send(sender, "setup-line", "line", "No problems recorded since the server started.");
+            for (String line : list) msg.send(sender, "setup-line", "line", line);
+            return true;
+        }
         if (sub.equals("staff")) {
             if (!sender.hasPermission("arkastyle.staff") && !(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
                 msg.send(sender, "no-permission");
@@ -153,7 +170,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             try {
                 r = sync.preview(plan);
             } catch (RuntimeException e) {
-                plugin.getLogger().warning("LuckPerms setup preview failed: " + e);
+                plugin.errors().error("style.setup", "LuckPerms setup preview failed", e, "by", sender.getName());
                 msg.send(sender, "grant-failed");
                 return;
             }
@@ -172,13 +189,13 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         try {
             run = sync.apply(plan);
         } catch (RuntimeException e) {
-            plugin.getLogger().warning("LuckPerms setup failed: " + e);
+            plugin.errors().error("style.setup", "LuckPerms setup failed", e, "by", sender.getName());
             msg.send(sender, "grant-failed");
             return;
         }
         run.whenComplete((r, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
             if (err != null) {
-                plugin.getLogger().warning("LuckPerms setup failed: " + err);
+                plugin.errors().error("style.setup", "LuckPerms setup failed", err, "by", sender.getName());
                 msg.send(sender, "grant-failed");
                 return;
             }
@@ -202,7 +219,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             java.nio.file.Files.writeString(new java.io.File(plugin.getDataFolder(), name).toPath(), text);
             return "plugins/ArkaSMPStyle/" + name;
         } catch (java.io.IOException e) {
-            plugin.getLogger().warning("Could not write " + name + ": " + e.getMessage());
+            plugin.errors().error("style.files", "Could not write " + name, e);
             return "(could not be saved)";
         }
     }
@@ -257,7 +274,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
             return give ? grants.grantForever(id, group) : grants.take(id, group);
         }).whenComplete((res, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
             if (err != null) {
-                plugin.getLogger().warning("Could not change the group of " + name + ": " + err);
+                plugin.errors().error("style.staff", "Could not change a LuckPerms group", err, "player", name, "group", group, "by", sender.getName());
                 msg.send(sender, "grant-failed");
                 return;
             }
@@ -315,14 +332,14 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         try {
             change = give ? grants.grant(id, rank.group(), days) : grants.take(id, rank.group());
         } catch (RuntimeException e) {
-            plugin.getLogger().warning("Could not change the rank of " + name + ": " + e.getMessage());
+            plugin.errors().error("style.rank", "Could not change a rank", e, "player", name, "by", sender.getName());
             msg.send(sender, "grant-failed");
             return;
         }
         final int daysGiven = days;
         change.whenComplete((res, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
             if (err != null) {
-                plugin.getLogger().warning("LuckPerms change for " + name + " failed: " + err);
+                plugin.errors().error("style.rank", "LuckPerms rank change failed", err, "player", name, "by", sender.getName());
                 msg.send(sender, "grant-failed");
                 return;
             }
@@ -371,7 +388,7 @@ final class StyleCommand implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             out.addAll(List.of("tag", "color", "bonus", "info"));
-            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove"));
+            if (sender.hasPermission("arkastyle.admin")) out.addAll(List.of("reload", "rank", "give", "remove", "errors"));
             if (canSetup(sender)) out.add("setup");
             if (sender.hasPermission("arkastyle.staff")) out.add("staff");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("setup") && canSetup(sender)) {

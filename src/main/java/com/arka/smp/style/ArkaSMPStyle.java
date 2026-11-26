@@ -30,9 +30,22 @@ public final class ArkaSMPStyle extends JavaPlugin {
     private RankGrants grants;   // null without LuckPerms
     private RoleSync roleSync;   // null without LuckPerms
     private boolean started;
+    private ErrorLog errors;
 
     @Override
     public void onEnable() {
+        // The error log comes first, so even a failure while starting is written to logs/errors.log.
+        errors = ErrorLog.create(this, "com.arka.smp.style.");
+        errors.start();
+        try {
+            enable();
+        } catch (RuntimeException | Error t) {
+            errors.error("startup", "ArkaSMPStyle could not start", t);
+            throw t;
+        }
+    }
+
+    private void enable() {
         try {
             if (!com.arka.smp.core.DataGuard.check(getDataFolder(), getPluginMeta().getVersion(), 1, getLogger()).proceed()) {
                 getServer().getPluginManager().disablePlugin(this);
@@ -81,21 +94,26 @@ public final class ArkaSMPStyle extends JavaPlugin {
     private void bind(String name, CommandExecutor ex, TabCompleter tab) {
         PluginCommand cmd = getCommand(name);
         if (cmd != null) {
-            cmd.setExecutor(ex);
-            cmd.setTabCompleter(tab);
+            // a crash inside a command is logged with its details and the player gets an error number
+            cmd.setExecutor(errors.guard(ex, (who, id) -> messages.send(who, "error-internal", "id", id)));
+            cmd.setTabCompleter(errors.guard(tab));
         }
     }
 
     @Override
     public void onDisable() {
-        if (!started) return;
-        if (profiles != null) profiles.save();
+        if (started && profiles != null) profiles.save();
+        if (errors != null) errors.stop();
     }
 
     // ---- accessors ---------------------------------------------------------------------------
 
     Messages messages() {
         return messages;
+    }
+
+    ErrorLog errors() {
+        return errors;
     }
 
     Ranks ranks() {
