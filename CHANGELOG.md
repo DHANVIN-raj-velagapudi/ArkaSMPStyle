@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.1
+
+### Changed
+- The staff audit now checks whether a player is watched staff before it reads the command they typed, so the commands of every
+  normal player are no longer split and parsed for nothing.
+
 ## 1.6.0
 
 ### Added

@@ -51,11 +51,12 @@ final class StaffAudit implements Listener {
     private void handle(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
         if (!plugin.getConfig().getBoolean("staff-audit.enabled", true)) return;
+        if (!watched(p)) return;                                   // almost every command comes from a normal player: stop before parsing it
         String text = e.getMessage().strip();
         if (text.length() < 2 || text.charAt(0) != '/') return;
         String[] parts = text.substring(1).split("\\s+");
         String bare = StaffActions.bare(parts[0]);
-        if (bare.equals("staff") || !watched(p)) return;           // /staff writes its own, fuller log line
+        if (bare.equals("staff")) return;                          // /staff writes its own, fuller log line
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
         StaffActions.Action action = StaffActions.parse(parts[0], args);
         if (action != null) {
